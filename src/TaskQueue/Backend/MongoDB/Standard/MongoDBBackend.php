@@ -66,7 +66,10 @@ class MongoDBBackend implements TaskQueueInterface
         // TODO add check for error
         $this->collection->insert($data);
 
-        $this->dataMapper->inject($task, array('id' => $data['_id']));
+        $data = array('id' => $data['_id'], 'eta' => $data['eta']);
+        $data = $this->normalizeData($data, true);
+
+        $this->dataMapper->inject($task, $data);
     }
 
     /**

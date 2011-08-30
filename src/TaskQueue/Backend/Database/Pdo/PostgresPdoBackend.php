@@ -29,7 +29,7 @@ class PostgresPdoBackend extends PdoBackend
         unset($data['id']);
 
         $columnNames = array_keys($data);
-        $sql = sprintf('INSERT INTO %s (%s) VALUES (:%s) RETURNING id',
+        $sql = sprintf('INSERT INTO %s (%s) VALUES (:%s) RETURNING id, eta',
             $this->tableName, implode(', ', $columnNames), implode(', :', $columnNames));
 
         $stmt = $this->db->prepare($sql);
@@ -43,6 +43,8 @@ class PostgresPdoBackend extends PdoBackend
         }
 
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        $data = $this->normalizeData($data, true);
+
         $this->dataMapper->inject($task, $data);
     }
 
