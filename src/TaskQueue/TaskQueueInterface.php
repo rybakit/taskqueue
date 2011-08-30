@@ -34,4 +34,5 @@ interface TaskQueueInterface
     //function remove($task);
 
     //function size();
+    //function get($unique);
 }

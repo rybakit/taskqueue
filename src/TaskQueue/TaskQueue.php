@@ -64,10 +64,10 @@ class TaskQueue implements TaskQueueInterface
     /**
      * @see TaskQueueInterface::pop()
      */
-    public function pop(array $taskNames = array())
+    public function pop()
     {
         try {
-            $task = $this->backend->pop($taskNames);
+            $task = $this->backend->pop();
         } catch (\Exception $e) {
             $this->logger->err(sprintf('Unable to pop task: %s.', $e->getMessage()));
             throw $e;
@@ -79,10 +79,10 @@ class TaskQueue implements TaskQueueInterface
     /**
      * @see TaskQueueInterface::peek()
      */
-    public function peek(array $taskNames = array(), $limit = 1, $skip = 0)
+    public function peek($limit = 1, $skip = 0)
     {
         try {
-            $tasks = $this->backend->peek($taskNames, $limit, $skip);
+            $tasks = $this->backend->peek($limit, $skip);
         } catch (\Exception $e) {
             $this->logger->err(sprintf('Unable to peek task(s): %s.', $e->getMessage()));
             throw $e;
