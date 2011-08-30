@@ -12,11 +12,11 @@ class IterableResult implements \Iterator
     protected $stmt;
 
     /**
-     * A PHP callback to convert data to object.
+     * A PHP callback to transform result set into another structure (e.g. object).
      *
      * @var \Closure|string|array
      */
-    protected $converter;
+    protected $hydrator;
 
     /**
      * @var boolean
@@ -36,19 +36,19 @@ class IterableResult implements \Iterator
     /**
      * Constructor.
      *
-     * @param \PDOStatement $mongoCursor
-     * @param \Closure|string|array $converter
+     * @param \PDOStatement $stmt
+     * @param \Closure|string|array $hydrator
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct(\PDOStatement $stmt, $converter)
+    public function __construct(\PDOStatement $stmt, $hydrator)
     {
-        if (!is_callable($converter)) {
-            throw new \InvalidArgumentException('The given converter callback is not a valid callable.');
+        if (!is_callable($hydrator)) {
+            throw new \InvalidArgumentException('The given hydrator is not a valid callable.');
         }
 
         $this->stmt = $stmt;
-        $this->converter = $converter;
+        $this->hydrator = $hydrator;
     }
 
     public function current()
@@ -74,7 +74,7 @@ class IterableResult implements \Iterator
     public function next()
     {
         $data = $this->stmt->fetch(\PDO::FETCH_ASSOC);
-        $this->current = is_array($data) ? call_user_func($this->converter, $data) : false;
+        $this->current = is_array($data) ? call_user_func($this->hydrator, $data) : false;
         $this->key++;
 
         return $this->current;

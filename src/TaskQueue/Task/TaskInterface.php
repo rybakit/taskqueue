@@ -5,13 +5,6 @@ namespace Rybakit\TaskQueue\Task;
 interface TaskInterface
 {
     /**
-     * Returns the name of the task.
-     *
-     * @return string The task name
-     */
-    function getName();
-
-    /**
      * Runs the task.
      *
      * @param \Closure|string|array $callback A PHP callback to run.

@@ -104,27 +104,17 @@ class PdoBackend implements TaskQueueInterface
     /**
      * @see TaskQueueInterface::pop()
      */
-    public function pop(array $taskNames = array())
+    public function pop()
     {
-        $where = array();
-        if ($taskNames) {
-            foreach ($taskNames as $i => $taskName) {
-                $where[':name_'.$i] = $taskName;
-            }
-        }
-
         $sql = '
-            SELECT id, name, payload, eta, max_retry_count, retry_delay, retry_count, status, scheduler, _task_class
+            SELECT id, payload, eta, max_retry_count, retry_delay, retry_count, _task_class
             FROM '.$this->tableName.'
-            WHERE '.($where ? ' AND name IN ('.implode(', ', array_keys($where)).') AND ' : '').' (eta <= :now OR eta IS NULL)
+            WHERE eta <= :now
             ORDER BY eta, id
             LIMIT 1';
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
-        foreach ($where as $key => $value) {
-            $stmt->bindValue($key, $value, PDO::PARAM_STR);
-        }
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -141,23 +131,14 @@ class PdoBackend implements TaskQueueInterface
     }
 
     /**
-     * TODO fix query for empty eta
-     *
      * @see TaskQueueInterface::peek()
      */
-    public function peek(array $taskNames = array(), $limit = 1, $skip = 0)
+    public function peek($limit = 1, $skip = 0)
     {
-        $where = array();
-        if ($taskNames) {
-            foreach ($taskNames as $i => $taskName) {
-                $where[':name_'.$i] = $taskName;
-            }
-        }
-
         $sql = '
-            SELECT id, name, payload, eta, max_retry_count, retry_delay, retry_count, status, scheduler, _task_class
+            SELECT id, payload, eta, max_retry_count, retry_delay, retry_count, _task_class
             FROM '.$this->tableName.'
-            WHERE '.($where ? ' AND name IN ('.implode(', ', array_keys($where)).') AND ' : '').' (eta <= :now OR eta IS NULL)
+            WHERE eta <= :now
             ORDER BY eta, id';
 
         if ($limit) {
@@ -169,9 +150,6 @@ class PdoBackend implements TaskQueueInterface
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
-        foreach ($where as $key => $value) {
-            $stmt->bindValue($key, $value, PDO::PARAM_STR);
-        }
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -180,6 +158,7 @@ class PdoBackend implements TaskQueueInterface
 
         $self = $this;
         $dataMapper = $this->dataMapper;
+
         return new IterableResult($stmt, function (array $data) use ($self, $dataMapper) {
             $data = $self->normalizeData($data, true);
             return $dataMapper->inject($data['_task_class'], $data);
@@ -190,10 +169,8 @@ class PdoBackend implements TaskQueueInterface
      * @see TaskQueueInterface::remove()
      */
     /*
-    public function remove(array $criteria)
+    public function remove()
     {
-        list($where, $params) = $this->buildQuery($criteria);
-
         $sql = sprintf('DELETE FROM %s WHERE %s', $this->tableName, implode(' AND ', $where));
 
         $stmt = $this->db->prepare($sql);
@@ -220,8 +197,11 @@ class PdoBackend implements TaskQueueInterface
     {
         if ($invert) {
             $data['payload'] = unserialize(base64_decode($data['payload']));
+            $data['eta'] = new \DateTime($data['eta']);
         } else {
             $data['payload'] = base64_encode(serialize($data['payload']));
+            $data['eta'] = $data['eta'] ?: new \DateTime();
+            $data['eta'] = $data['eta']->format(self::DATETIME_FORMAT);
         }
 
         return $data;

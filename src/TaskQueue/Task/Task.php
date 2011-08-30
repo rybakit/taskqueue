@@ -4,7 +4,6 @@ namespace Rybakit\TaskQueue\Task;
 
 use Rybakit\TaskQueue\DataMapper\ExtractorInterface;
 use Rybakit\TaskQueue\DataMapper\InjectorInterface;
-use Rybakit\TaskQueue\Scheduler\SchedulerInterface;
 
 class Task implements TaskInterface, ExtractorInterface, InjectorInterface
 {
@@ -14,13 +13,6 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
      * @var mixed
      */
     protected $id;
-
-    /**
-     * The task name.
-     *
-     * @var string
-     */
-    protected $name;
 
     /**
      * @var mixed
@@ -58,38 +50,16 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
     /**
      * Constructor.
      *
-     * @param string $name
      * @param mixed $payload
      * @param \DateTime|string|null $eta
      */
-    public function __construct($name, $payload = null, $eta = null)
+    public function __construct($payload, $eta = null)
     {
-        $this->name = $name;
         $this->payload = $payload;
 
         if ($eta) {
             $this->setEta($eta);
         }
-    }
-
-    /**
-     * Sets an unique identifier for the task.
-     *
-     * @param mixed $id
-     *
-     * @throws \LogicException
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-
-        /*
-        if (!$this->id) {
-            $this->id = $id;
-        } else if ($this->id != $id) {
-            throw new \LogicException(sprintf('You cannot modify task identifier (%s).', json_encode($this->id)));
-        }
-        */
     }
 
     /**
@@ -100,43 +70,6 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Sets task name.
-     *
-     * @param string $name
-     *
-     * @throws \LogicException
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-        /*
-        if (!$this->name) {
-            $this->name = $name;
-        } else if ($this->name != $name) {
-            throw new \LogicException(sprintf('You cannot modify task name (%s).', $this->name));
-        }
-        */
-    }
-
-    /**
-     * @see TaskInterface::getName()
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Sets task payload.
-     *
-     * @param mixed $payload
-     */
-    public function setPayload($payload)
-    {
-        $this->payload = $payload;
     }
 
     /**
@@ -210,14 +143,6 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
     }
 
     /**
-     * @param int $count
-     */
-    public function setRetryCount($count)
-    {
-        $this->retryCount = $count;
-    }
-
-    /**
      * @return int
      */
     public function getRetryCount()
@@ -251,17 +176,13 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
     }
 
     /**
+     * TODO make string representation of the task more informative.
+     *
      * @see TaskInterface::__toString()
      */
     public function __toString()
     {
-        $str = $this->name;
-
-        if ($this->id) {
-            $str .= '@'.$this->id;
-        }
-
-        return is_string($str) ? $str : spl_object_hash($this);
+        return $this->id ? json_encode($this->id) : spl_object_hash($this);
     }
 
     /**
@@ -271,7 +192,6 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
     {
         return array(
             'id'                => $this->id,
-            'name'              => $this->name,
             'payload'           => $this->payload,
             'eta'               => $this->eta,
             'max_retry_count'   => $this->maxRetryCount,
@@ -286,13 +206,17 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
     public function inject(array $data)
     {
         if (isset($data['id'])) {
-            $this->setId($data['id']);
-        }
-        if (isset($data['name'])) {
-            $this->setName($data['name']);
+            /*
+            if (!$this->id) {
+                $this->id = $id;
+            } else if ($this->id != $id) {
+                throw new \LogicException(sprintf('You cannot modify task identifier (%s).', json_encode($this->id)));
+            }
+            */
+            $this->id = $data['id'];
         }
         if (isset($data['payload'])) {
-            $this->setPayload($data['payload']);
+            $this->payload = $data['payload'];
         }
         if (isset($data['eta'])) {
             $this->setEta($data['eta']);
@@ -304,7 +228,7 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
             $this->setRetryDelay($data['retry_delay']);
         }
         if (isset($data['retry_count'])) {
-            $this->setRetryCount($data['retry_count']);
+            $this->retryCount = $data['retry_count'];
         }
     }
 }

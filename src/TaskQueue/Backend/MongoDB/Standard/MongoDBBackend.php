@@ -72,17 +72,12 @@ class MongoDBBackend implements TaskQueueInterface
     /**
      * @see TaskQueueInterface::pop()
      */
-    public function pop(array $taskNames = array())
+    public function pop()
     {
-        $query = array('$or' => array(array('eta' => array('$lte' => new \MongoDate())), array('eta' => null)));
-        if ($taskNames) {
-            $query = array('$and' => array($query, array('name' => array('$in' => $taskNames))));
-        }
-
         $command = array(
             'findandmodify' => $this->collection->getName(),
             'remove'        => true,
-            'query'         => $query,
+            'query'         => array('eta' => array('$lte' => new \MongoDate())),
             'sort'          => array('eta' => 1),
         );
 
@@ -103,16 +98,10 @@ class MongoDBBackend implements TaskQueueInterface
     /**
      * @see TaskQueueInterface::peek()
      */
-    public function peek(array $taskNames = array(), $limit = 1, $skip = 0)
+    public function peek($limit = 1, $skip = 0)
     {
-        $query = array('$or' => array(array('eta' => array('$lte' => new \MongoDate())), array('eta' => null)));
-        if ($taskNames) {
-            $query = array('$and' => array($query, array('name' => array('$in' => $taskNames))));
-        }
-
         // TODO add check for error
-        $cursor = $this->collection->find($query);
-
+        $cursor = $this->collection->find(array('eta' => array('$lte' => new \MongoDate())));
         $cursor->sort(array('eta' => 1));
 
         if ($limit) {
@@ -125,6 +114,7 @@ class MongoDBBackend implements TaskQueueInterface
 
         $self = $this;
         $dataMapper = $this->dataMapper;
+
         return new IterableResult($cursor, function (array $data) use ($self, $dataMapper) {
             $data = $self->normalizeData($data, true);
             return $dataMapper->inject($data['_task_class'], $data);
@@ -161,8 +151,7 @@ class MongoDBBackend implements TaskQueueInterface
             $data['eta'] = $date->setTimestamp($data['eta']->sec);
         } else {
             $data['payload'] = base64_encode(serialize($data['payload']));
-            $data['eta'] = $data['eta'] ?: new \DateTime();
-            $data['eta'] = new \MongoDate($data['eta']->getTimestamp());
+            $data['eta'] = $data['eta'] ? new \MongoDate($data['eta']->getTimestamp()) : new \MongoDate();
         }
 
         return $data;

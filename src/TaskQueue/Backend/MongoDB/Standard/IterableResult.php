@@ -12,33 +12,35 @@ class IterableResult implements \Iterator
     protected $mongoCursor;
 
     /**
-     * A PHP callback to convert data to object.
+     * A PHP callback to transform result set into another structure (e.g. object).
      *
      * @var \Closure|string|array
      */
-    protected $converter;
+    protected $hydrator;
 
     /**
      * Constructor.
      *
      * @param \MongoCursor $mongoCursor
-     * @param \Closure|string|array $converter
+     * @param \Closure|string|array $hydrator
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct(\MongoCursor $mongoCursor, $converter)
+    public function __construct(\MongoCursor $mongoCursor, $hydrator)
     {
-        if (!is_callable($converter)) {
-            throw new \InvalidArgumentException('The given converter callback is not a valid callable.');
+        if (!is_callable($hydrator)) {
+            throw new \InvalidArgumentException('The given hydrator is not a valid callable.');
         }
 
         $this->mongoCursor = $mongoCursor;
-        $this->converter = $converter;
+        $this->hydrator = $hydrator;
     }
 
     public function current()
     {
-        return call_user_func($this->converter, $this->mongoCursor->current());
+        $data = $this->mongoCursor->current();
+
+        return is_array($data) ? call_user_func($this->hydrator, $data) : false;
     }
 
     public function key()

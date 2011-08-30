@@ -2,40 +2,41 @@
 
 namespace Rybakit\TaskQueue\Worker;
 
-use Rybakit\TaskQueue\Exception\InvalidArgumentException;
-use Rybakit\TaskQueue\Exception\MissingCallbackException;
 use Rybakit\TaskQueue\Task\TaskInterface;
 
 class CallbackWorker extends Worker
 {
     /**
-     * @var array
+     * @var \Closure|string|array
      */
-    protected $callbacks = array();
+    protected $callback;
 
     /**
-     * Registers a callback.
+     * Sets a callback.
      *
      * @param \Closure|string|array $callback A PHP callback to run.
-     * @param string|null $taskName
      *
-     * @throws \Rybakit\TaskQueue\Exception\InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
-    public function registerCallback($callback, $taskName = null)
+    public function setCallback($callback)
     {
         if (!is_callable($callback)) {
-            throw new InvalidArgumentException('Invalid callback specified.');
+            throw new \InvalidArgumentException('Invalid callback specified.');
         }
 
-        $this->callbacks[(string) $taskName] = $callback;
+        $this->callback = $callback;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function filterTaskNames()
+    public function work($interval = 5)
     {
-        return array_key_exists('', $this->callbacks) ? array() : array_keys($this->callbacks);
+        if (!$this->callback) {
+            throw new \LogicException('No callback specified.');
+        }
+
+        parent::work($interval);
     }
 
     /**
@@ -43,16 +44,6 @@ class CallbackWorker extends Worker
      */
     protected function runTask(TaskInterface $task)
     {
-        $taskName = $task->getName();
-
-        if (isset($this->callbacks[$taskName])) {
-            $callback = $this->callbacks[$taskName];
-        } else if (array_key_exists('', $this->callbacks)) {
-            $callback = $this->callbacks[''];
-        } else {
-            throw new MissingCallbackException(sprintf('No callback is registered for "%" tasks.', $taskName));
-        }
-
-        $task->run($callback);
+        $task->run($this->callback);
     }
 }

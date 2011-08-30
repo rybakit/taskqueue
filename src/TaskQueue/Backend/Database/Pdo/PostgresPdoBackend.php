@@ -49,29 +49,19 @@ class PostgresPdoBackend extends PdoBackend
     /**
      * @see TaskQueueInterface::pop()
      */
-    public function pop(array $taskNames = array())
+    public function pop()
     {
-        $where = array();
-        if ($taskNames) {
-            foreach ($taskNames as $i => $taskName) {
-                $where[':name_'.$i] = $taskName;
-            }
-        }
-
         $sql = '
             DELETE FROM '.$this->tableName.' WHERE id = (
                 SELECT id
                 FROM '.$this->tableName.'
-                WHERE '.($where ? ' AND name IN ('.implode(', ', array_keys($where)).') AND ' : '').' (eta <= :now OR eta IS NULL)
-                ORDER BY eta NULLS FIRST, id
+                WHERE eta <= :now
+                ORDER BY eta, id
                 LIMIT 1
-            ) RETURNING id, name, payload, eta, max_retry_count, retry_delay, retry_count, _task_class';
+            ) RETURNING id, payload, eta, max_retry_count, retry_delay, retry_count, _task_class';
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
-        foreach ($where as $key => $value) {
-            $stmt->bindValue($key, $value, PDO::PARAM_STR);
-        }
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();

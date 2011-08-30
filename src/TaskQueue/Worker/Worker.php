@@ -60,14 +60,6 @@ abstract class Worker
     }
 
     /**
-     * @return array
-     */
-    public function filterTaskNames()
-    {
-        return array();
-    }
-
-    /**
      * Processes attached queues.
      *
      * @param int $interval Number of seconds the worker will wait until processing the next task. Default is 5.
@@ -80,9 +72,8 @@ abstract class Worker
 
         $this->logger->info(sprintf('Worker %s started.', $this));
 
-        $taskNames = $this->filterTaskNames();
         foreach ($this->queues as $queue) {
-            while ($task = $queue->pop($taskNames)) {
+            while ($task = $queue->pop()) {
                 if (!$task instanceof TaskInterface) {
                     throw new \UnexpectedValueException('Expected instance of TaskInterface.');
                 }
