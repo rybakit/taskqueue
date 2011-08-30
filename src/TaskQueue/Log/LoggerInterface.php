@@ -1,6 +1,6 @@
 <?php
 
-namespace Rybakit\TaskQueue\Log;
+namespace TaskQueue\Log;
 
 interface LoggerInterface
 {

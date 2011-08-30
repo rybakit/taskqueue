@@ -1,28 +1,28 @@
 <?php
 
-namespace Rybakit\TaskQueue;
+namespace TaskQueue;
 
-use Rybakit\TaskQueue\Task\TaskInterface;
-use Rybakit\TaskQueue\Log\LoggerInterface;
-use Rybakit\TaskQueue\Log\NullLogger;
+use TaskQueue\Task\TaskInterface;
+use TaskQueue\Log\LoggerInterface;
+use TaskQueue\Log\NullLogger;
 
 class TaskQueue implements TaskQueueInterface
 {
     /**
-     * @var \Rybakit\TaskQueue\TaskQueueInterface
+     * @var \TaskQueue\TaskQueueInterface
      */
     protected $backend;
 
     /**
-     * @var \Rybakit\TaskQueue\Log\LoggerInterface
+     * @var \TaskQueue\Log\LoggerInterface
      */
     protected $logger;
 
     /**
      * Constructor.
      *
-     * @param \Rybakit\TaskQueue\TaskQueueInterface $backend
-     * @param \Rybakit\TaskQueue\Log\LoggerInterface|null $logger
+     * @param \TaskQueue\TaskQueueInterface $backend
+     * @param \TaskQueue\Log\LoggerInterface|null $logger
      */
     public function __construct(TaskQueueInterface $backend, LoggerInterface $logger = null)
     {
@@ -31,7 +31,7 @@ class TaskQueue implements TaskQueueInterface
     }
 
     /**
-     * @return \Rybakit\TaskQueue\TaskQueueInterface
+     * @return \TaskQueue\TaskQueueInterface
      */
     public function getBackend()
     {

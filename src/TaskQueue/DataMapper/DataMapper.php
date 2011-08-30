@@ -1,6 +1,6 @@
 <?php
 
-namespace Rybakit\TaskQueue\DataMapper;
+namespace TaskQueue\DataMapper;
 
 class DataMapper implements DataMapperInterface
 {

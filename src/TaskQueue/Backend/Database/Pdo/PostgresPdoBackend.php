@@ -1,10 +1,10 @@
 <?php
 
-namespace Rybakit\TaskQueue\Backend\Database\Pdo;
+namespace TaskQueue\Backend\Database\Pdo;
 
 use PDO;
-use Rybakit\TaskQueue\DataMapper\DataMapperInterface;
-use Rybakit\TaskQueue\Task\Task;
+use TaskQueue\DataMapper\DataMapperInterface;
+use TaskQueue\Task\Task;
 
 class PostgresPdoBackend extends PdoBackend
 {

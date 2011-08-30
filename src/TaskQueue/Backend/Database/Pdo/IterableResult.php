@@ -1,6 +1,6 @@
 <?php
 
-namespace Rybakit\TaskQueue\Backend\Database\Pdo;
+namespace TaskQueue\Backend\Database\Pdo;
 
 class IterableResult implements \Iterator
 {

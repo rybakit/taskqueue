@@ -1,6 +1,6 @@
 <?php
 
-namespace Rybakit\TaskQueue\Backend\MongoDB\Standard;
+namespace TaskQueue\Backend\MongoDB\Standard;
 
 class IterableResult implements \Iterator
 {

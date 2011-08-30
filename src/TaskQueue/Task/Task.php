@@ -1,9 +1,9 @@
 <?php
 
-namespace Rybakit\TaskQueue\Task;
+namespace TaskQueue\Task;
 
-use Rybakit\TaskQueue\DataMapper\ExtractorInterface;
-use Rybakit\TaskQueue\DataMapper\InjectorInterface;
+use TaskQueue\DataMapper\ExtractorInterface;
+use TaskQueue\DataMapper\InjectorInterface;
 
 class Task implements TaskInterface, ExtractorInterface, InjectorInterface
 {

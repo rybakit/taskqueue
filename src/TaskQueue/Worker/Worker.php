@@ -1,11 +1,11 @@
 <?php
 
-namespace Rybakit\TaskQueue\Worker;
+namespace TaskQueue\Worker;
 
-use Rybakit\TaskQueue\TaskQueueInterface;
-use Rybakit\TaskQueue\Log\LoggerInterface;
-use Rybakit\TaskQueue\Log\NullLogger;
-use Rybakit\TaskQueue\Task\TaskInterface;
+use TaskQueue\TaskQueueInterface;
+use TaskQueue\Log\LoggerInterface;
+use TaskQueue\Log\NullLogger;
+use TaskQueue\Task\TaskInterface;
 
 abstract class Worker
 {
@@ -15,17 +15,17 @@ abstract class Worker
     protected $queues = array();
 
     /**
-     * @var \Rybakit\TaskQueue\Log\LoggerInterface
+     * @var \TaskQueue\Log\LoggerInterface
      */
     protected $logger;
 
     /**
-     * @var \Rybakit\TaskQueue\TaskQueueInterface
+     * @var \TaskQueue\TaskQueueInterface
      */
     protected $currentQueue;
 
     /**
-     * @var \Rybakit\TaskQueue\Task\TaskInterface
+     * @var \TaskQueue\Task\TaskInterface
      */
     protected $currentTask;
 
@@ -38,7 +38,7 @@ abstract class Worker
      * Constructor.
      *
      * @param array $queues
-     * @param \Rybakit\TaskQueue\Log\LoggerInterface|null $logger
+     * @param \TaskQueue\Log\LoggerInterface|null $logger
      */
     public function __construct(array $queues = array(), LoggerInterface $logger = null)
     {
@@ -52,7 +52,7 @@ abstract class Worker
     /**
      * Attaches a queue to worker.
      *
-     * @param \Rybakit\TaskQueue\TaskQueueInterface $taskQueue
+     * @param \TaskQueue\TaskQueueInterface $taskQueue
      */
     public function attachQueue(TaskQueueInterface $taskQueue)
     {

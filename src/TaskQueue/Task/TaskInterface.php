@@ -1,6 +1,6 @@
 <?php
 
-namespace Rybakit\TaskQueue\Task;
+namespace TaskQueue\Task;
 
 interface TaskInterface
 {

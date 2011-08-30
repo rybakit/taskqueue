@@ -1,8 +1,8 @@
 <?php
 
-namespace Rybakit\TaskQueue\Worker;
+namespace TaskQueue\Worker;
 
-use Rybakit\TaskQueue\Task\TaskInterface;
+use TaskQueue\Task\TaskInterface;
 
 class CallbackWorker extends Worker
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Rybakit\TaskQueue\Console\Command;
+namespace TaskQueue\Console\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Rybakit\JobQueue\Job\Api\StandardInterface;
+use JobQueue\Job\Api\StandardInterface;
 
 class ShowTaskQueueCommand extends Command
 {

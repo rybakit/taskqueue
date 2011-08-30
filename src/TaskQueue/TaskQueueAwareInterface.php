@@ -1,6 +1,6 @@
 <?php
 
-namespace Rybakit\TaskQueue;
+namespace TaskQueue;
 
 interface TaskQueueAwareInterface
 {

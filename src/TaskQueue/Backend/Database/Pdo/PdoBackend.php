@@ -1,12 +1,12 @@
 <?php
 
-namespace Rybakit\TaskQueue\Backend\Database\Pdo;
+namespace TaskQueue\Backend\Database\Pdo;
 
 use PDO;
-use Rybakit\TaskQueue\TaskQueueInterface;
-use Rybakit\TaskQueue\DataMapper\DataMapperInterface;
-use Rybakit\TaskQueue\DataMapper\DataMapper;
-use Rybakit\TaskQueue\Task\Task;
+use TaskQueue\TaskQueueInterface;
+use TaskQueue\DataMapper\DataMapperInterface;
+use TaskQueue\DataMapper\DataMapper;
+use TaskQueue\Task\Task;
 
 class PdoBackend implements TaskQueueInterface
 {
@@ -23,7 +23,7 @@ class PdoBackend implements TaskQueueInterface
     protected $tableName;
 
     /**
-     * @var \Rybakit\TaskQueue\DataMapper\DataMapperInterface
+     * @var \TaskQueue\DataMapper\DataMapperInterface
      */
     protected $dataMapper;
 
@@ -32,7 +32,7 @@ class PdoBackend implements TaskQueueInterface
      *
      * @param \PDO $db
      * @param string $tableName
-     * @param \Rybakit\TaskQueue\DataMapper\DataMapperInterface|null $dataMapper
+     * @param \TaskQueue\DataMapper\DataMapperInterface|null $dataMapper
      */
     public function __construct(PDO $db, $tableName, DataMapperInterface $dataMapper = null)
     {
@@ -54,7 +54,7 @@ class PdoBackend implements TaskQueueInterface
     /**
      * Retrieves data mapper instance.
      *
-     * @return \Rybakit\TaskQueue\DataMapper\DataMapperInterface
+     * @return \TaskQueue\DataMapper\DataMapperInterface
      */
     public function getDataMapper()
     {

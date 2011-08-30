@@ -1,11 +1,11 @@
 <?php
 
-namespace Rybakit\TaskQueue\Console\Helper;
+namespace TaskQueue\Console\Helper;
 
 use Symfony\Component\Console\Helper\Helper;
-use Rybakit\TaskQueue\TaskQueueInterface;
+use TaskQueue\TaskQueueInterface;
 
-class JobQueueHelper extends Helper
+class TaskQueueHelper extends Helper
 {
     protected $taskQueue;
 

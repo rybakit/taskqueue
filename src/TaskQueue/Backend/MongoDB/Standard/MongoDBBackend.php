@@ -1,12 +1,12 @@
 <?php
 
-namespace Rybakit\TaskQueue\Backend\MongoDB\Standard;
+namespace TaskQueue\Backend\MongoDB\Standard;
 
-use Rybakit\TaskQueue\TaskQueueInterface;
-use Rybakit\TaskQueue\DataMapper\DataMapperInterface;
-use Rybakit\TaskQueue\DataMapper\DataMapper;
-use Rybakit\TaskQueue\Task\Task;
-use Rybakit\TaskQueue\Task\TaskInterface;
+use TaskQueue\TaskQueueInterface;
+use TaskQueue\DataMapper\DataMapperInterface;
+use TaskQueue\DataMapper\DataMapper;
+use TaskQueue\Task\Task;
+use TaskQueue\Task\TaskInterface;
 
 class MongoDBBackend implements TaskQueueInterface
 {
@@ -16,7 +16,7 @@ class MongoDBBackend implements TaskQueueInterface
     protected $collection;
 
     /**
-     * @var \Rybakit\TaskQueue\DataMapper\DataMapperInterface
+     * @var \TaskQueue\DataMapper\DataMapperInterface
      */
     protected $dataMapper;
 
@@ -24,7 +24,7 @@ class MongoDBBackend implements TaskQueueInterface
      * Constructor.
      *
      * @param \MongoCollection $collection
-     * @param \Rybakit\TaskQueue\DataMapper\DataMapperInterface|null $dataMapper
+     * @param \TaskQueue\DataMapper\DataMapperInterface|null $dataMapper
      */
     public function __construct(\MongoCollection $collection, DataMapperInterface $dataMapper = null)
     {
@@ -45,7 +45,7 @@ class MongoDBBackend implements TaskQueueInterface
     /**
      * Retrieves data mapper instance.
      *
-     * @return \Rybakit\TaskQueue\DataMapper\DataMapperInterface
+     * @return \TaskQueue\DataMapper\DataMapperInterface
      */
     public function getDataMapper()
     {

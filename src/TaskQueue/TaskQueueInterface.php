@@ -1,8 +1,8 @@
 <?php
 
-namespace Rybakit\TaskQueue;
+namespace TaskQueue;
 
-use Rybakit\TaskQueue\Task\TaskInterface;
+use TaskQueue\Task\TaskInterface;
 
 interface TaskQueueInterface
 {
@@ -13,7 +13,7 @@ interface TaskQueueInterface
     function push($task);
 
     /**
-     * @return \Rybakit\TaskQueue\Task\TaskInterface|false
+     * @return \TaskQueue\Task\TaskInterface|false
      */
     function pop();
 
