@@ -2,6 +2,7 @@
 
 namespace TaskQueue\Worker;
 
+use TaskQueue\TaskQueueInterface;
 use TaskQueue\Task\TaskInterface;
 
 class CallbackWorker extends Worker
@@ -42,8 +43,8 @@ class CallbackWorker extends Worker
     /**
      * {@inheritdoc}
      */
-    protected function runTask(TaskInterface $task)
+    protected function runTask(TaskInterface $task, TaskQueueInterface $queue)
     {
-        $task->run($this->callback);
+        $task->run($this->callback, $queue);
     }
 }

@@ -83,7 +83,7 @@ abstract class Worker
                 $this->isCurrentTaskProcessed = false;
 
                 try {
-                    $this->runTask($task);
+                    $this->runTask($task, $queue);
                     $this->isCurrentTaskProcessed = true;
 
                     $this->logger->info(sprintf('Task %s was successfully executed.', $task));
@@ -132,5 +132,5 @@ abstract class Worker
         return sprintf('%s (%s)', __FILE__, php_uname());
     }
 
-    abstract protected function runTask(TaskInterface $task);
+    abstract protected function runTask(TaskInterface $task, TaskQueueInterface $queue);
 }

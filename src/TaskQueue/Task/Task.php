@@ -2,6 +2,7 @@
 
 namespace TaskQueue\Task;
 
+use TaskQueue\TaskQueueInterface;
 use TaskQueue\DataMapper\ExtractorInterface;
 use TaskQueue\DataMapper\InjectorInterface;
 
@@ -155,9 +156,9 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
      *
      * @see TaskInterface::run()
      */
-    public function run($callback)
+    public function run($callback, TaskQueueInterface $queue)
     {
-        return call_user_func($callback, $this);
+        return call_user_func($callback, $this, $queue);
     }
 
     /**
