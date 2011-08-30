@@ -47,7 +47,7 @@ class TaskQueue implements TaskQueueInterface
     }
 
     /**
-     * @see TaskQueueInterface::add()
+     * @see TaskQueueInterface::push()
      */
     public function push($task)
     {
@@ -62,7 +62,7 @@ class TaskQueue implements TaskQueueInterface
     }
 
     /**
-     * @see TaskQueueInterface::next()
+     * @see TaskQueueInterface::pop()
      */
     public function pop(array $taskNames = array())
     {
