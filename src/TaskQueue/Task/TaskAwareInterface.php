@@ -4,5 +4,5 @@ namespace TaskQueue\Task;
 
 interface TaskAwareInterface
 {
-    function setTaskQueue(TaskInterface $task);
+    function setTask(TaskInterface $task);
 }
