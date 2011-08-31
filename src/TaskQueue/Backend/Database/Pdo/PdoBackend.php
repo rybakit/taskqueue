@@ -196,8 +196,12 @@ class PdoBackend implements TaskQueueInterface
     public function normalizeData(array $data, $invert = false)
     {
         if ($invert) {
-            $data['payload'] = unserialize(base64_decode($data['payload']));
-            $data['eta'] = new \DateTime($data['eta']);
+            if (isset($data['payload'])) {
+                $data['payload'] = unserialize(base64_decode($data['payload']));
+            }
+            if (isset($data['eta'])) {
+                $data['eta'] = new \DateTime($data['eta']);
+            }
         } else {
             $data['payload'] = base64_encode(serialize($data['payload']));
             $data['eta'] = $data['eta'] ?: new \DateTime();

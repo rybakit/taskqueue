@@ -148,10 +148,16 @@ class MongoDBBackend implements TaskQueueInterface
     public function normalizeData(array $data, $invert = false)
     {
         if ($invert) {
-            $data['id'] = $data['_id'];
-            $data['payload'] = unserialize(base64_decode($data['payload']));
-            $date = new \DateTime();
-            $data['eta'] = $date->setTimestamp($data['eta']->sec);
+            if (isset($data['_id'])) {
+                $data['id'] = $data['_id'];
+            }
+            if (isset($data['payload'])) {
+                $data['payload'] = unserialize(base64_decode($data['payload']));
+            }
+            if (isset($data['eta'])) {
+                $date = new \DateTime();
+                $data['eta'] = $date->setTimestamp($data['eta']->sec);
+            }
         } else {
             $data['payload'] = base64_encode(serialize($data['payload']));
             $data['eta'] = $data['eta'] ? new \MongoDate($data['eta']->getTimestamp()) : new \MongoDate();
