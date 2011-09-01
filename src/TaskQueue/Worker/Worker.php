@@ -35,6 +35,11 @@ abstract class Worker
     protected $isCurrentTaskProcessed = false;
 
     /**
+     * @var bool
+     */
+    protected $shutdown = false;
+
+    /**
      * Constructor.
      *
      * @param array $queues
@@ -52,31 +57,50 @@ abstract class Worker
     /**
      * Attaches a queue to worker.
      *
-     * @param \TaskQueue\TaskQueueInterface $taskQueue
+     * @param \TaskQueue\TaskQueueInterface $queue
      */
-    public function attachQueue(TaskQueueInterface $taskQueue)
+    public function attachQueue(TaskQueueInterface $queue)
     {
-        $this->queues[spl_object_hash($taskQueue)] = $taskQueue;
+        $oid = spl_object_hash($queue);
+        $this->queues[$oid] = $queue;
+    }
+
+    /**
+     * Detaches a queue from worker.
+     *
+     * @param \TaskQueue\TaskQueueInterface $queue
+     */
+    public function detachQueue(TaskQueueInterface $queue)
+    {
+        $oid = spl_object_hash($queue);
+        unset($this->queues[$oid]);
     }
 
     /**
      * Processes attached queues.
      *
-     * @param int $interval Number of seconds the worker will wait until processing the next task. Default is 5.
-     *
-     * @throws \UnexpectedValueException
+     * @param int $interval Number of seconds the worker will wait until processing the next task. Default is 10.
      */
-    public function work($interval = 5)
+    public function work($interval = 10)
     {
-        register_shutdown_function(array($this, 'shutdown'));
-
+        $this->startup();
         $this->logger->info(sprintf('Worker %s started.', $this));
 
-        foreach ($this->queues as $queue) {
-            while ($task = $queue->pop()) {
-                if (!$task instanceof TaskInterface) {
-                    throw new \UnexpectedValueException('Expected instance of TaskInterface.');
-                }
+        while (true) {
+            if ($this->shutdown) {
+                $this->logger->info(sprintf('Worker %s shutdown.', $this));
+                break;
+            }
+
+            $next = false;
+            try {
+                $next = $this->getNext();
+            } catch (\Exception $e) {
+                $this->logger->err($e->getMessage());
+            }
+
+            if (is_array($next)) {
+                list($queue, $task) = $next;
 
                 $this->currentQueue = $queue;
                 $this->currentTask = $task;
@@ -100,14 +124,23 @@ abstract class Worker
                 $this->currentTask = null;
                 $this->currentQueue = null;
 
-                sleep($interval);
             }
+
+            sleep($interval);
         }
 
         $this->logger->info(sprintf('Worker %s stopped.', $this));
     }
 
     public function shutdown()
+    {
+        $this->shutdown = true;
+    }
+
+    /**
+     * TODO change scope to protected (use closure in register_shutdown_function())
+     */
+    public function failure()
     {
         if (!$this->currentTask) {
             return;
@@ -129,7 +162,48 @@ abstract class Worker
 
     public function __toString()
     {
-        return sprintf('%s (%s)', __FILE__, php_uname());
+        return sprintf('#%s (%s)', getmypid(), php_uname());
+    }
+
+    protected function getNext()
+    {
+        foreach ($this->queues as $queue) {
+            while ($task = $queue->pop()) {
+                if (!$task instanceof TaskInterface) {
+                    throw new \UnexpectedValueException(sprintf('Result of %s::pop() must be an instance of TaskInterface.', get_class($queue)));
+                }
+                return array($queue, $task);
+            }
+        }
+
+        return false;
+    }
+
+    protected function startup()
+    {
+        register_shutdown_function(array($this, 'failure'));
+        $this->registerSigHandlers();
+    }
+
+    /**
+     * Registers signal handlers that a worker should respond to.
+     *
+     * TERM: Shutdown immediately and stop processing jobs.
+     * INT: Shutdown immediately and stop processing jobs.
+     * QUIT: Shutdown after the current job finishes processing.
+     */
+    protected function registerSigHandlers()
+    {
+        if (!function_exists('pcntl_signal')) {
+            return;
+        }
+
+        declare(ticks = 1);
+        pcntl_signal(SIGTERM, array($this, 'shutdown'));
+        pcntl_signal(SIGINT,  array($this, 'shutdown'));
+        pcntl_signal(SIGQUIT, array($this, 'shutdown'));
+
+        $this->logger->debug('Registered signals.');
     }
 
     abstract protected function runTask(TaskInterface $task, TaskQueueInterface $queue);
