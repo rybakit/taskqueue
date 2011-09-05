@@ -3,18 +3,9 @@
 namespace TaskQueue\Task;
 
 use TaskQueue\TaskQueueInterface;
-use TaskQueue\DataMapper\ExtractorInterface;
-use TaskQueue\DataMapper\InjectorInterface;
 
-class Task implements TaskInterface, ExtractorInterface, InjectorInterface
+class Task implements TaskInterface
 {
-    /**
-     * An unique identifier for the task.
-     *
-     * @var mixed
-     */
-    protected $id;
-
     /**
      * @var mixed
      */
@@ -61,16 +52,6 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
         if ($eta) {
             $this->setEta($eta);
         }
-    }
-
-    /**
-     * Gets an unique identifier for the task.
-     *
-     * @return mixed
-     */
-    public function getId()
-    {
-        return $this->id;
     }
 
     /**
@@ -177,59 +158,27 @@ class Task implements TaskInterface, ExtractorInterface, InjectorInterface
     }
 
     /**
-     * TODO make string representation of the task more informative.
-     *
      * @see TaskInterface::__toString()
      */
     public function __toString()
     {
-        return $this->id ? json_encode($this->id) : spl_object_hash($this);
+        $payload = $this->payload;
+
+        if (is_object($payload)) {
+            $payload = get_class($payload);
+        } else if (!is_string($this->payload)) {
+            $payload = preg_replace("/\n\s*/s", '', var_export($payload, true));
+        }
+
+        return sprintf('%s@%s (%s)', get_class($this), spl_object_hash($this), $payload);
     }
 
     /**
-     * @see ExtractorInterface::extract()
+     * Clones this object.
      */
-    public function extract()
+    public function __clone()
     {
-        return array(
-            'id'                => $this->id,
-            'payload'           => $this->payload,
-            'eta'               => $this->eta,
-            'max_retry_count'   => $this->maxRetryCount,
-            'retry_delay'       => $this->retryDelay,
-            'retry_count'       => $this->retryCount,
-        );
-    }
-
-    /**
-     * @see InjectorInterface::inject()
-     */
-    public function inject(array $data)
-    {
-        if (isset($data['id'])) {
-            /*
-            if (!$this->id) {
-                $this->id = $id;
-            } else if ($this->id != $id) {
-                throw new \LogicException(sprintf('You cannot modify task identifier (%s).', json_encode($this->id)));
-            }
-            */
-            $this->id = $data['id'];
-        }
-        if (isset($data['payload'])) {
-            $this->payload = $data['payload'];
-        }
-        if (isset($data['eta'])) {
-            $this->setEta($data['eta']);
-        }
-        if (isset($data['max_retry_count'])) {
-            $this->setMaxRetryCount($data['max_retry_count']);
-        }
-        if (isset($data['retry_delay'])) {
-            $this->setRetryDelay($data['retry_delay']);
-        }
-        if (isset($data['retry_count'])) {
-            $this->retryCount = $data['retry_count'];
-        }
+        $this->eta = clone $this->eta;
+        $this->retryCount = 0;
     }
 }

@@ -9,7 +9,7 @@ class IterableResult implements \Iterator
      *
      * @var \MongoCursor
      */
-    protected $mongoCursor;
+    protected $cursor;
 
     /**
      * A PHP callback to transform result set into another structure (e.g. object).
@@ -21,45 +21,45 @@ class IterableResult implements \Iterator
     /**
      * Constructor.
      *
-     * @param \MongoCursor $mongoCursor
+     * @param \MongoCursor $cursor
      * @param \Closure|string|array $hydrator
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct(\MongoCursor $mongoCursor, $hydrator)
+    public function __construct(\MongoCursor $cursor, $hydrator)
     {
         if (!is_callable($hydrator)) {
             throw new \InvalidArgumentException('The given hydrator is not a valid callable.');
         }
 
-        $this->mongoCursor = $mongoCursor;
+        $this->cursor = $cursor;
         $this->hydrator = $hydrator;
     }
 
     public function current()
     {
-        $data = $this->mongoCursor->current();
+        $data = $this->cursor->current();
 
-        return is_array($data) ? call_user_func($this->hydrator, $data) : false;
+        return $data ? call_user_func($this->hydrator, $data) : false;
     }
 
     public function key()
     {
-        return $this->mongoCursor->key();
+        return $this->cursor->key();
     }
 
     public function rewind()
     {
-        return $this->mongoCursor->rewind();
+        return $this->cursor->rewind();
     }
 
     public function next()
     {
-        return $this->mongoCursor->next();
+        return $this->cursor->next();
     }
 
     public function valid()
     {
-        return $this->mongoCursor->valid();
+        return $this->cursor->valid();
     }
 }

@@ -47,11 +47,9 @@ class TaskQueue implements TaskQueueInterface
     }
 
     /**
-     * TODO add TaskInterface type hinting (__toString is used)
-     *
      * @see TaskQueueInterface::push()
      */
-    public function push($task)
+    public function push(TaskInterface $task)
     {
         try {
             $this->backend->push($task);

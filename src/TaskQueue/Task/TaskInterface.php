@@ -7,6 +7,16 @@ use TaskQueue\TaskQueueInterface;
 interface TaskInterface
 {
     /**
+     * @return mixed
+     */
+    function getPayload();
+
+    /**
+     * @return \DateTime|null
+     */
+    function getEta();
+
+    /**
      * Runs the task.
      *
      * @param \Closure|string|array $callback A PHP callback to run.

@@ -3,9 +3,6 @@
 namespace TaskQueue\Backend\MongoDB\Standard;
 
 use TaskQueue\TaskQueueInterface;
-use TaskQueue\DataMapper\DataMapperInterface;
-use TaskQueue\DataMapper\DataMapper;
-use TaskQueue\Task\Task;
 use TaskQueue\Task\TaskInterface;
 
 class MongoDBBackend implements TaskQueueInterface
@@ -16,20 +13,13 @@ class MongoDBBackend implements TaskQueueInterface
     protected $collection;
 
     /**
-     * @var \TaskQueue\DataMapper\DataMapperInterface
-     */
-    protected $dataMapper;
-
-    /**
      * Constructor.
      *
      * @param \MongoCollection $collection
-     * @param \TaskQueue\DataMapper\DataMapperInterface|null $dataMapper
      */
-    public function __construct(\MongoCollection $collection, DataMapperInterface $dataMapper = null)
+    public function __construct(\MongoCollection $collection)
     {
         $this->collection = $collection;
-        $this->dataMapper = $dataMapper ?: new DataMapper();
     }
 
     /**
@@ -43,33 +33,18 @@ class MongoDBBackend implements TaskQueueInterface
     }
 
     /**
-     * Retrieves data mapper instance.
-     *
-     * @return \TaskQueue\DataMapper\DataMapperInterface
-     */
-    public function getDataMapper()
-    {
-        return $this->dataMapper;
-    }
-
-    /**
      * @see TaskQueueInterface::push()
      */
-    public function push($task)
+    public function push(TaskInterface $task)
     {
-        $data = $this->dataMapper->extract($task);
-        $data = $this->normalizeData($data);
+        $eta = $task->getEta() ?: new \DateTime();
 
-        $data['_task_class'] = get_class($task);
-        unset($data['id']);
+        $data = array(
+            'eta'   => new \MongoDate($eta->getTimestamp()),
+            'task'  => $this->normalizeData($task),
+        );
 
-        // TODO add check for error
-        $this->collection->insert($data);
-
-        $data = array('id' => $data['_id'], 'eta' => $data['eta']);
-        $data = $this->normalizeData($data, true);
-
-        $this->dataMapper->inject($task, $data);
+        $this->collection->insert($data, array('safe' => true));
     }
 
     /**
@@ -80,6 +55,7 @@ class MongoDBBackend implements TaskQueueInterface
         $command = array(
             'findandmodify' => $this->collection->getName(),
             'remove'        => true,
+            'fields'        => array('task' => 1),
             'query'         => array('eta' => array('$lte' => new \MongoDate())),
             'sort'          => array('eta' => 1),
         );
@@ -89,13 +65,9 @@ class MongoDBBackend implements TaskQueueInterface
             throw new \RuntimeException(isset($result['errmsg']) ? $result['errmsg'] : 'Unable to query collection.');
         }
 
-        if (!$data = $result['value']) {
-            return false;
-        }
+        $data = $result['value'];
 
-        $data = $this->normalizeData($data, true);
-
-        return $this->dataMapper->inject($data['_task_class'], $data);
+        return $data ? $this->normalizeData($data['task'], true) : false;
     }
 
     /**
@@ -103,7 +75,6 @@ class MongoDBBackend implements TaskQueueInterface
      */
     public function peek($limit = 1, $skip = 0)
     {
-        // TODO add check for error
         $cursor = $this->collection->find(array('eta' => array('$lte' => new \MongoDate())));
         $cursor->sort(array('eta' => 1));
 
@@ -116,53 +87,19 @@ class MongoDBBackend implements TaskQueueInterface
         }
 
         $self = $this;
-        $dataMapper = $this->dataMapper;
-
-        return new IterableResult($cursor, function (array $data) use ($self, $dataMapper) {
-            $data = $self->normalizeData($data, true);
-            return $dataMapper->inject($data['_task_class'], $data);
+        return new IterableResult($cursor, function ($data) use ($self) {
+            return $self->normalizeData($data, true);
         });
     }
 
     /**
-     * @see TaskQueueInterface::remove()
-     */
-    /*
-    public function remove($task)
-    {
-        $result = $this->collection->remove($query, array('safe' => true));
-        if (!isset($result['ok']) || !$result['ok']) {
-            throw new \RuntimeException(isset($result['errmsg']) ? $result['errmsg'] : 'Unable to remove items.');
-        }
-
-        return $result['n'];
-    }
-    */
-
-    /**
-     * @param array $data
+     * @param mixed $data
      * @param bool $invert
      *
      * @return array
      */
-    public function normalizeData(array $data, $invert = false)
+    public function normalizeData($data, $invert = false)
     {
-        if ($invert) {
-            if (isset($data['_id'])) {
-                $data['id'] = $data['_id'];
-            }
-            if (isset($data['payload'])) {
-                $data['payload'] = unserialize(base64_decode($data['payload']));
-            }
-            if (isset($data['eta'])) {
-                $date = new \DateTime();
-                $data['eta'] = $date->setTimestamp($data['eta']->sec);
-            }
-        } else {
-            $data['payload'] = base64_encode(serialize($data['payload']));
-            $data['eta'] = $data['eta'] ? new \MongoDate($data['eta']->getTimestamp()) : new \MongoDate();
-        }
-
-        return $data;
+        return $invert ? unserialize(base64_decode($data)) : base64_encode(serialize($data));
     }
 }

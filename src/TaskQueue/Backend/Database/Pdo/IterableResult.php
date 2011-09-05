@@ -5,13 +5,6 @@ namespace TaskQueue\Backend\Database\Pdo;
 class IterableResult implements \Iterator
 {
     /**
-     * The PHP PDOStatement instance.
-     *
-     * @var \PDOStatement
-     */
-    protected $stmt;
-
-    /**
      * A PHP callback to transform result set into another structure (e.g. object).
      *
      * @var \Closure|string|array
@@ -36,18 +29,16 @@ class IterableResult implements \Iterator
     /**
      * Constructor.
      *
-     * @param \PDOStatement $stmt
      * @param \Closure|string|array $hydrator
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct(\PDOStatement $stmt, $hydrator)
+    public function __construct($hydrator)
     {
         if (!is_callable($hydrator)) {
             throw new \InvalidArgumentException('The given hydrator is not a valid callable.');
         }
 
-        $this->stmt = $stmt;
         $this->hydrator = $hydrator;
     }
 
@@ -73,8 +64,7 @@ class IterableResult implements \Iterator
 
     public function next()
     {
-        $data = $this->stmt->fetch(\PDO::FETCH_ASSOC);
-        $this->current = is_array($data) ? call_user_func($this->hydrator, $data) : false;
+        $this->current = call_user_func($this->hydrator);
         $this->key++;
 
         return $this->current;

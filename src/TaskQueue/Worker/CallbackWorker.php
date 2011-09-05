@@ -31,13 +31,13 @@ class CallbackWorker extends Worker
     /**
      * {@inheritdoc}
      */
-    public function work($interval = 5)
+    public function work()
     {
         if (!$this->callback) {
             throw new \LogicException('No callback specified.');
         }
 
-        parent::work($interval);
+        parent::work();
     }
 
     /**

@@ -7,10 +7,9 @@ use TaskQueue\Task\TaskInterface;
 interface TaskQueueInterface
 {
     /**
-     * @param mixed $task
-     * @throws \Exception
+     * @param \TaskQueue\Task\TaskInterface $task
      */
-    function push($task);
+    function push(TaskInterface $task);
 
     /**
      * @return \TaskQueue\Task\TaskInterface|false
@@ -25,14 +24,5 @@ interface TaskQueueInterface
      */
     function peek($limit = 1, $skip = 0);
 
-    /**
-     * @param mixed $task
-     * @throws \Exception
-     *
-     * @return boolean
-     */
-    //function remove($task);
-
     //function size();
-    //function get($unique);
 }
