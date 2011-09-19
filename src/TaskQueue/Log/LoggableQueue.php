@@ -4,7 +4,6 @@ namespace TaskQueue\Log;
 
 use TaskQueue\Queue\QueueInterface;
 use TaskQueue\Task\TaskInterface;
-use TaskQueue\Log\LoggerInterface;
 
 class LoggableQueue implements QueueInterface
 {
