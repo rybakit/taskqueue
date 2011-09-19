@@ -2,7 +2,7 @@
 
 namespace TaskQueue\Task;
 
-use TaskQueue\TaskQueueInterface;
+use TaskQueue\Queue\QueueInterface;
 
 class Task implements TaskInterface
 {
@@ -137,7 +137,7 @@ class Task implements TaskInterface
      *
      * @see TaskInterface::run()
      */
-    public function run($callback, TaskQueueInterface $queue)
+    public function run($callback, QueueInterface $queue)
     {
         return call_user_func($callback, $this, $queue);
     }

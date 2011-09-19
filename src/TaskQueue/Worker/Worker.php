@@ -2,10 +2,10 @@
 
 namespace TaskQueue\Worker;
 
-use TaskQueue\TaskQueueInterface;
+use TaskQueue\Queue\QueueInterface;
+use TaskQueue\Task\TaskInterface;
 use TaskQueue\Log\LoggerInterface;
 use TaskQueue\Log\NullLogger;
-use TaskQueue\Task\TaskInterface;
 
 abstract class Worker
 {
@@ -20,7 +20,7 @@ abstract class Worker
     protected $logger;
 
     /**
-     * @var \TaskQueue\TaskQueueInterface
+     * @var \TaskQueue\Queue\QueueInterface
      */
     protected $currentQueue;
 
@@ -52,9 +52,9 @@ abstract class Worker
     /**
      * Attaches a queue to worker.
      *
-     * @param \TaskQueue\TaskQueueInterface $queue
+     * @param \TaskQueue\Queue\QueueInterface $queue
      */
-    public function attachQueue(TaskQueueInterface $queue)
+    public function attachQueue(QueueInterface $queue)
     {
         $oid = spl_object_hash($queue);
         $this->queues[$oid] = $queue;
@@ -63,9 +63,9 @@ abstract class Worker
     /**
      * Detaches a queue from worker.
      *
-     * @param \TaskQueue\TaskQueueInterface $queue
+     * @param \TaskQueue\Queue\QueueInterface $queue
      */
-    public function detachQueue(TaskQueueInterface $queue)
+    public function detachQueue(QueueInterface $queue)
     {
         $oid = spl_object_hash($queue);
         unset($this->queues[$oid]);
@@ -138,6 +138,7 @@ abstract class Worker
 
     /**
      * @throws \UnexpectedValueException
+     *
      * @return array|bool
      */
     protected function getNext()
@@ -154,5 +155,5 @@ abstract class Worker
         return false;
     }
 
-    abstract protected function runTask(TaskInterface $task, TaskQueueInterface $queue);
+    abstract protected function runTask(TaskInterface $task, QueueInterface $queue);
 }

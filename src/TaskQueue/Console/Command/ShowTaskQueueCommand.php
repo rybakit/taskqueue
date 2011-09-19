@@ -5,7 +5,6 @@ namespace TaskQueue\Console\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use JobQueue\Job\Api\StandardInterface;
 
 class ShowTaskQueueCommand extends Command
 {
@@ -23,21 +22,14 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $taskQueue = $this->getHelper('task_queue')->getTaskQueue();
+        $queue = $this->getHelper('task_queue')->getQueue();
 
-        $now = new \DateTime();
-        $criteria = array(
-/*
-            'status'            => StandardInterface::STATUS_SCHEDULED,
-            'scheduledAt:lte'   => $now,
-            'completedAt:lte'   => $now,
-*/
-        );
-
-        $tasks = $taskQueue->getBy($criteria, 50);
+        /*
+        $tasks = $queue->getBy($criteria, 50);
 
         foreach ($tasks as $task) {
             $output->write(PHP_EOL . sprintf('Id: %s', $task->getId()) . PHP_EOL);
         }
+        */
     }
 }

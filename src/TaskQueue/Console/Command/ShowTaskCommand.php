@@ -13,7 +13,7 @@ class ShowTaskCommand extends Command
     {
         $this
         ->setName('task_queue:task:show')
-        ->setDescription('Shows a job.')
+        ->setDescription('Shows a task.')
         ->setDefinition(array(
             new InputArgument('task-id', InputArgument::REQUIRED, 'The task id'),
         ))
@@ -25,12 +25,14 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $taskQueue = $this->getHelper('task_queue')->getTaskQueue();
-        $tasks = $taskQueue->getBy(array('id' => $input->getArgument('task-id')));
+        $queue = $this->getHelper('task_queue')->getQueue();
+        /*
+        $tasks = $queue->getBy(array('id' => $input->getArgument('task-id')));
 
         $tasks->rewind();
         $task = $tasks->current();
 
         $output->write(PHP_EOL . sprintf('Id: %s', $task->getId()) . PHP_EOL);
+        */
     }
 }

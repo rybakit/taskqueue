@@ -1,6 +1,6 @@
 <?php
 
-namespace TaskQueue\Backend\Database\Pdo;
+namespace TaskQueue\Queue\Database\Pdo;
 
 class IterableResult implements \Iterator
 {

@@ -2,7 +2,7 @@
 
 namespace TaskQueue\Task;
 
-use TaskQueue\TaskQueueInterface;
+use TaskQueue\Queue\QueueInterface;
 
 interface TaskInterface
 {
@@ -20,11 +20,11 @@ interface TaskInterface
      * Runs the task.
      *
      * @param \Closure|string|array $callback A PHP callback to run.
-     * @param \TaskQueue\TaskQueueInterface $queue
+     * @param \TaskQueue\Queue\QueueInterface $queue
      *
      * @return mixed
      */
-    function run($callable, TaskQueueInterface $queue);
+    function run($callable, QueueInterface $queue);
 
     /**
      * Reschedules the task in the future (when a task fails).

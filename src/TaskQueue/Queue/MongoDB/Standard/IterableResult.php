@@ -1,6 +1,6 @@
 <?php
 
-namespace TaskQueue\Backend\MongoDB\Standard;
+namespace TaskQueue\Queue\MongoDB\Standard;
 
 class IterableResult implements \Iterator
 {
