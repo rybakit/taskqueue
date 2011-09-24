@@ -25,4 +25,9 @@ interface QueueInterface
     function peek($limit = 1, $skip = 0);
 
     //function size();
+
+    /**
+     * Removes all tasks from this queue.
+     */
+    //function purge();
 }
