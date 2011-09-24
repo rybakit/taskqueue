@@ -38,7 +38,7 @@ class LoggableQueue implements QueueInterface
     }
 
     /**
-     * @return Log\LoggerInterface
+     * @return \TaskQueue\Log\LoggerInterface
      */
     public function getLogger()
     {
