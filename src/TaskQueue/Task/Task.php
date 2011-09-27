@@ -170,7 +170,7 @@ class Task implements TaskInterface
             $payload = preg_replace("/\n\s*/s", '', var_export($payload, true));
         }
 
-        return sprintf('%s@%s (%s)', get_class($this), spl_object_hash($this), $payload);
+        return sprintf('%s {%s}', get_class($this), $payload);
     }
 
     /**
