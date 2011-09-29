@@ -22,6 +22,20 @@ class ArrayQueueTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($queue->pop());
     }
 
+    public function testPopWithPriority()
+    {
+        $queue = new PhpQueue();
+
+        $t1 = new Task(null, '+1 hour');
+        $queue->push($t1);
+
+        $t2 = new Task(null);
+        $queue->push($t2);
+
+        $this->assertSame($t2, $queue->pop());
+        $this->assertSame($t1, $queue->pop());
+    }
+
     public function testPeek()
     {
         $queue = new PhpQueue();

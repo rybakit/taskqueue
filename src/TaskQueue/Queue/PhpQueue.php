@@ -31,7 +31,7 @@ class PhpQueue implements QueueInterface
     public function push(TaskInterface $task)
     {
         $eta = $task->getEta() ?: new \DateTime();
-        $this->innerQueue->insert($task, array($eta->getTimestamp(), $this->queueOrder--));
+        $this->innerQueue->insert($task, array(-$eta->getTimestamp(), $this->queueOrder--));
     }
 
     /**
