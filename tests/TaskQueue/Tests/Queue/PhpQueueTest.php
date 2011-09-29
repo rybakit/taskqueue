@@ -1,11 +1,11 @@
 <?php
 
-namespace TaskQueue\Tests\Task;
+namespace TaskQueue\Tests\Queue;
 
 use TaskQueue\Queue\PhpQueue;
 use TaskQueue\Task\Task;
 
-class ArrayQueueTest extends \PHPUnit_Framework_TestCase
+class PhpQueueTest extends \PHPUnit_Framework_TestCase
 {
     public function testPop()
     {
