@@ -39,36 +39,22 @@ class PhpQueue implements QueueInterface
      */
     public function pop()
     {
-        if ($this->innerQueue->isEmpty()) {
-            return false;
-        }
-
-        return $this->innerQueue->extract();
+        return $this->innerQueue->isEmpty() ? false : $this->innerQueue->extract();
     }
 
     /**
-     * TODO: throw exeptions on invalid arguments?
-     *
      * @see QueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
-        if ($this->innerQueue->isEmpty()) {
-            return new \EmptyIterator();
+        if ($limit < 0) {
+            // Parameter limit must either be -1 or a value greater than or equal 0
+            throw new \OutOfRangeException('Parameter limit must be greater than or equal 0.');
+        }
+        if ($skip < 0) {
+            throw new \OutOfRangeException('Parameter skip must be greater than or equal 0.');
         }
 
-        $tasks = array();
-        foreach (clone $this->innerQueue as $task) {
-            if ($skip > 0) {
-                $skip--;
-                continue;
-            }
-            if ($limit > 0) {
-                $tasks[] = $task;
-                $limit--;
-            }
-        }
-
-        return new \ArrayIterator($tasks);
+        return new \LimitIterator(clone $this->innerQueue, $skip, $limit);
     }
 }
