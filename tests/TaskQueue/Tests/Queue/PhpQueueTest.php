@@ -22,7 +22,7 @@ class PhpQueueTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($queue->pop());
     }
 
-    public function testPopWithPriority()
+    public function testPopOrder()
     {
         $queue = new PhpQueue();
 
@@ -46,61 +46,67 @@ class PhpQueueTest extends \PHPUnit_Framework_TestCase
         $t2 = $this->getMock('TaskQueue\\Task\\TaskInterface');
         $queue->push($t2);
 
-        $tasks = $queue->peek();
+        $t3 = $this->getMock('TaskQueue\\Task\\TaskInterface');
+        $queue->push($t3);
+
+        $tasks = $queue->peek(2, 1);
+
         $this->assertInstanceOf('Iterator', $tasks);
-        $this->assertEquals(1, $tasks->count());
-        //$this->assertEquals(2, $queue->size());
-        $this->assertSame($t1, reset($tasks));
+
+        $tasks->rewind();
+        $this->assertSame($t2, $tasks->current());
+        $tasks->next();
+        $this->assertSame($t3, $tasks->current());
+        $tasks->next();
+        $this->assertEmpty($tasks->current());
     }
 
-    public function testPeekWithLimit()
+    public function testPeekLimitRange()
     {
         $queue = new PhpQueue();
 
-        $t1 = $this->getMock('TaskQueue\\Task\\TaskInterface');
-        $queue->push($t1);
-
-        $t2 = $this->getMock('TaskQueue\\Task\\TaskInterface');
-        $queue->push($t2);
-
-        $tasks = $queue->peek(2);
-        $this->assertInstanceOf('Iterator', $tasks);
-        $this->assertEquals(2, $tasks->count());
-        $this->assertSame($t1, reset($tasks));
-        $this->assertSame($t2, next($tasks));
-
-        $tasks = $queue->peek(0);
-        $this->assertInstanceOf('Iterator', $tasks);
-        $this->assertEquals(0, $tasks->count());
-
-        $tasks = $queue->peek(-1);
-        $this->assertInstanceOf('Iterator', $tasks);
-        $this->assertEquals(0, $tasks->count());
+        try {
+            $tasks = $queue->peek(0);
+            $this->fail('peek() throws an \OutOfRangeException if limit less then or equal 0');
+        } catch (\Exception $e) {
+            $this->assertInstanceOf('OutOfRangeException', $e, 'peek() throws an \OutOfRangeException if limit less then or equal 0');
+            $this->assertEquals('Parameter limit must be greater than 0.', $e->getMessage());
+        }
     }
 
-    public function testPeekWithSkip()
+    public function testPeekSkipRange()
     {
         $queue = new PhpQueue();
 
-        $t1 = $this->getMock('TaskQueue\\Task\\TaskInterface');
-        $queue->push($t1);
+        try {
+            $tasks = $queue->peek(1, -1);
+            $this->fail('peek() throws an \OutOfRangeException if skip less then 0');
+        } catch (\Exception $e) {
+            $this->assertInstanceOf('OutOfRangeException', $e, 'peek() throws an \OutOfRangeException if skip less then 0');
+            $this->assertEquals('Parameter skip must be greater than or equal 0.', $e->getMessage());
+        }
+    }
 
-        $t2 = $this->getMock('TaskQueue\\Task\\TaskInterface');
-        $queue->push($t2);
+    public function testCount()
+    {
+        $queue = new PhpQueue();
+        $this->assertEquals(0, $queue->count());
 
-        $tasks = $queue->peek(10, -1);
-        $this->assertInstanceOf('Iterator', $tasks);
-        $this->assertEquals(2, $tasks->count());
-        $this->assertSame($t1, reset($tasks));
-        $this->assertSame($t2, next($tasks));
+        for ($i = 0; $i < 10; $i++) {
+            $queue->push($this->getMock('TaskQueue\\Task\\TaskInterface'));
+        }
+        $this->assertEquals(10, $queue->count());
+    }
 
-        $tasks = $queue->peek(1, 1);
-        $this->assertInstanceOf('Iterator', $tasks);
-        $this->assertEquals(1, $tasks->count());
-        $this->assertSame($t2, reset($tasks));
+    public function testClear()
+    {
+        $queue = new PhpQueue();
 
-        $tasks = $queue->peek(1, 2);
-        $this->assertInstanceOf('Iterator', $tasks);
-        $this->assertEquals(0, $tasks->count());
+        for ($i = 0; $i < 10; $i++) {
+            $queue->push($this->getMock('TaskQueue\\Task\\TaskInterface'));
+        }
+
+        $queue->clear();
+        $this->assertEquals(0, $queue->count());
     }
 }

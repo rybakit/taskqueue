@@ -109,6 +109,36 @@ class PdoQueue implements QueueInterface
     }
 
     /**
+     * @see QueueInterface::count()
+     */
+    public function count()
+    {
+        $sql = 'SELECT COUNT(*) FROM '.$this->tableName;
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt->execute()) {
+            $err = $stmt->errorInfo();
+            throw new \RuntimeException($err[2]);
+        }
+
+        return $stmt->fetchColumn();
+    }
+
+    /**
+     * @see QueueInterface::clear()
+     */
+    public function clear()
+    {
+        $sql = 'TRUNCATE TABLE '.$this->tableName;
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt->execute()) {
+            $err = $stmt->errorInfo();
+            throw new \RuntimeException($err[2]);
+        }
+    }
+
+    /**
      * @param mixed $data
      * @param bool $invert
      *

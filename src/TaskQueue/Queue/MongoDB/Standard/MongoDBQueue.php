@@ -93,6 +93,22 @@ class MongoDBQueue implements QueueInterface
     }
 
     /**
+     * @see QueueInterface::count()
+     */
+    public function count()
+    {
+        return $this->collection->count();
+    }
+
+    /**
+     * @see QueueInterface::clear()
+     */
+    public function clear()
+    {
+        $this->collection->remove(array('safe' => true));
+    }
+
+    /**
      * @param mixed $data
      * @param bool $invert
      *

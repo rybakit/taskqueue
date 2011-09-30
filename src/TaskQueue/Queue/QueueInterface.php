@@ -4,7 +4,7 @@ namespace TaskQueue\Queue;
 
 use TaskQueue\Task\TaskInterface;
 
-interface QueueInterface
+interface QueueInterface extends \Countable
 {
     /**
      * @param \TaskQueue\Task\TaskInterface $task
@@ -24,10 +24,8 @@ interface QueueInterface
      */
     function peek($limit = 1, $skip = 0);
 
-    //function size();
-
     /**
-     * Removes all tasks from this queue.
+     * Removes all tasks from the queue.
      */
-    //function purge();
+    function clear();
 }
