@@ -56,10 +56,10 @@ class IterableResult implements \Iterator
     {
         if ($this->rewinded) {
             throw new \LogicException('Can only iterate a Result once.');
-        } else {
-            $this->current = $this->next();
-            $this->rewinded = true;
         }
+
+        $this->current = $this->next();
+        $this->rewinded = true;
     }
 
     public function next()
