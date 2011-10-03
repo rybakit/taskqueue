@@ -89,4 +89,27 @@ class LoggableQueue implements QueueInterface
 
         return $tasks;
     }
+
+    /**
+     * @see QueueInterface::count()
+     */
+    public function count()
+    {
+        return $this->queue->count();
+    }
+
+    /**
+     * @see QueueInterface::clear()
+     */
+    public function clear()
+    {
+        try {
+            $this->queue->clear();
+        } catch (\Exception $e) {
+            $this->logger->err(sprintf('Unable to clear queue: %s.', $e->getMessage()));
+            throw $e;
+        }
+
+        $this->logger->debug('Queue was successfully cleared.');
+    }
 }
