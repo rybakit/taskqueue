@@ -17,8 +17,12 @@ interface QueueInterface extends \Countable
     function pop();
 
     /**
+     * TODO: rename this method
+     *
      * @param int $limit
      * @param int $skip
+     *
+     * @throws \OutOfRangeException
      *
      * @return \Iterator
      */

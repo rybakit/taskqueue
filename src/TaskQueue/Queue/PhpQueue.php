@@ -39,7 +39,14 @@ class PhpQueue implements QueueInterface
      */
     public function pop()
     {
-        return $this->innerQueue->isEmpty() ? false : $this->innerQueue->extract();
+        if (!$this->innerQueue->isEmpty()) {
+            $eta = $this->innerQueue->top()->getEta();
+            if (!$eta || $eta->getTimestamp() <= time()) {
+                return $this->innerQueue->extract();
+            }
+        }
+
+        return false;
     }
 
     /**

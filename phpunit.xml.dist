@@ -11,6 +11,14 @@
          syntaxCheck="false"
          bootstrap="tests/bootstrap.php"
 >
+  <php>
+    <var name="db_pg_host" value="localhost" />
+    <var name="db_pg_port" value="5432"/>
+    <var name="db_pg_username" value="postgres" />
+    <var name="db_pg_password" value="" />
+    <var name="db_pg_name" value="task_queue_tests" />
+  </php>
+
     <testsuites>
         <testsuite name="TaskQueue Test Suite">
             <directory>./tests/TaskQueue/</directory>
