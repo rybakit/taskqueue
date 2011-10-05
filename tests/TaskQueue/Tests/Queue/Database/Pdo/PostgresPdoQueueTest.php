@@ -4,7 +4,6 @@ namespace TaskQueue\Tests\Queue\Database\Pdo;
 
 use TaskQueue\Tests\Queue\AbstractQueueTest;
 use TaskQueue\Queue\Database\Pdo\PostgresPdoQueue;
-use TaskQueue\Task\Task;
 
 class PostgresPdoQueueTest extends AbstractQueueTest
 {

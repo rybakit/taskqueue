@@ -1,10 +1,9 @@
 <?php
 
-namespace TaskQueue\Tests\Queue\Database\Pdo;
+namespace TaskQueue\Tests\Queue\MongoDB\Standard;
 
 use TaskQueue\Tests\Queue\AbstractQueueTest;
 use TaskQueue\Queue\MongoDB\Standard\MongoDBQueue;
-use TaskQueue\Task\Task;
 
 class MongoDBQueueTest extends AbstractQueueTest
 {
