@@ -78,7 +78,6 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    /*
     public function testPeekSkipRange()
     {
         $queue = $this->createQueue();
@@ -91,7 +90,6 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals('Parameter skip must be greater than or equal 0.', $e->getMessage());
         }
     }
-    */
 
     public function testCount()
     {

@@ -16,14 +16,14 @@ class PostgresPdoQueueTest extends AbstractQueueTest
 
         $this->conn = PdoTestUtil::createConnection();
         $this->conn->exec('DROP TABLE IF EXISTS task_queue');
-        $this->conn->exec('CREATE TABLE task_queue (id SERIAL, eta timestamp, task text)');
+        $this->conn->exec('CREATE TABLE task_queue (id SERIAL, eta timestamp NOT NULL, task text NOT NULL)');
     }
 
     public function tearDown()
     {
         parent::tearDown();
 
-        //$this->conn->exec('DROP TABLE IF EXISTS task_queue');
+        $this->conn->exec('DROP TABLE IF EXISTS task_queue');
         $this->conn = null;
     }
 
