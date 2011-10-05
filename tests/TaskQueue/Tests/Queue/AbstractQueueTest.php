@@ -114,5 +114,5 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $queue->count());
     }
 
-    abstract public function createQueue();
+    abstract protected function createQueue();
 }

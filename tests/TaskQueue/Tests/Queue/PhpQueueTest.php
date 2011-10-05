@@ -7,7 +7,7 @@ use TaskQueue\Task\Task;
 
 class PhpQueueTest extends AbstractQueueTest
 {
-    public function createQueue()
+    protected function createQueue()
     {
         return new PhpQueue();
     }
