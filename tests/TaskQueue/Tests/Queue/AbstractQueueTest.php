@@ -91,24 +91,15 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testCount()
+    public function testCountAndClear()
     {
         $queue = $this->createQueue();
         $this->assertEquals(0, $queue->count());
 
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 7; $i++) {
             $queue->push($this->getMock('TaskQueue\\Task\\TaskInterface'));
         }
-        $this->assertEquals(10, $queue->count());
-    }
-
-    public function testClear()
-    {
-        $queue = $this->createQueue();
-
-        for ($i = 0; $i < 10; $i++) {
-            $queue->push($this->getMock('TaskQueue\\Task\\TaskInterface'));
-        }
+        $this->assertEquals(7, $queue->count());
 
         $queue->clear();
         $this->assertEquals(0, $queue->count());

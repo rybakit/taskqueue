@@ -34,7 +34,7 @@ class MongoDBQueueTest extends AbstractQueueTest
 
     protected static function createConnection()
     {
-        $server = isset($GLOBALS['mongo_server']) ? $GLOBALS['mongo_server'] : null;
+        $server = isset($GLOBALS['mongo_server']) ? $GLOBALS['mongo_server'] : 'mongodb://localhost:27017';
         $dbName = isset($GLOBALS['mongo_db_name']) ? $GLOBALS['mongo_db_name'] : 'task_queue_tests';
         $mongo = new \Mongo($server);
 
