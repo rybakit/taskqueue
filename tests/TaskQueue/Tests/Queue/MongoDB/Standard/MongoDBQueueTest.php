@@ -10,30 +10,35 @@ class MongoDBQueueTest extends AbstractQueueTest
     /**
      * @var \MongoDb
      */
-    protected $conn;
+    protected static $conn;
+
+    public static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+
+        self::$conn = self::createConnection();
+        self::$conn->task_queue->drop();
+        self::$conn->createCollection('task_queue');
+    }
+
+    public static function tearDownAfterClass()
+    {
+        parent::tearDownAfterClass();
+
+        self::$conn->task_queue->drop();
+        self::$conn = null;
+    }
 
     public function setUp()
     {
         parent::setUp();
 
-        $this->conn = self::createConnection();
-        $this->conn->task_queue->drop();
-        $this->conn->createCollection('task_queue');
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-
-        $this->conn->task_queue->drop();
-        $this->conn = null;
+        self::$conn->task_queue->remove(array(), array('safe' => true));
     }
 
     protected function createQueue()
     {
-        $this->conn->task_queue->remove(array(), array('safe' => true));
-
-        return new MongoDBQueue($this->conn->task_queue);
+        return new MongoDBQueue(self::$conn->task_queue);
     }
 
     protected static function createConnection()

@@ -7,30 +7,35 @@ use TaskQueue\Queue\Database\Pdo\PostgresPdoQueue;
 
 class PostgresPdoQueueTest extends AbstractQueueTest
 {
-    protected $conn;
+    protected static $conn;
+
+    public static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+
+        self::$conn = self::createConnection();
+        self::$conn->exec('DROP TABLE IF EXISTS task_queue');
+        self::$conn->exec('CREATE TABLE task_queue (id SERIAL, eta timestamp NOT NULL, task text NOT NULL)');
+    }
+
+    public static function tearDownAfterClass()
+    {
+        parent::tearDown();
+
+        self::$conn->exec('DROP TABLE IF EXISTS task_queue');
+        self::$conn = null;
+    }
 
     public function setUp()
     {
         parent::setUp();
 
-        $this->conn = self::createConnection();
-        $this->conn->exec('DROP TABLE IF EXISTS task_queue');
-        $this->conn->exec('CREATE TABLE task_queue (id SERIAL, eta timestamp NOT NULL, task text NOT NULL)');
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-
-        $this->conn->exec('DROP TABLE IF EXISTS task_queue');
-        $this->conn = null;
+        self::$conn->exec('TRUNCATE task_queue RESTART IDENTITY');
     }
 
     protected function createQueue()
     {
-        $this->conn->exec('TRUNCATE task_queue RESTART IDENTITY');
-
-        return new PostgresPdoQueue($this->conn, 'task_queue');
+        return new PostgresPdoQueue(self::$conn, 'task_queue');
     }
 
     protected static function createConnection()
