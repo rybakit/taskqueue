@@ -7,29 +7,33 @@ use TaskQueue\Queue\MongoDB\Standard\MongoDBQueue;
 
 class MongoDBQueueTest extends AbstractQueueTest
 {
-    protected $collection;
+    /**
+     * @var \MongoDb
+     */
+    protected $conn;
 
     public function setUp()
     {
         parent::setUp();
 
-        $this->collection = self::createConnection()->task_queue;
-        $this->collection->remove(array(), array('safe' => true));
+        $this->conn = self::createConnection();
+        $this->conn->task_queue->drop();
+        $this->conn->createCollection('task_queue');
     }
 
     public function tearDown()
     {
         parent::tearDown();
 
-        $this->collection->drop();
-        $this->collection = null;
+        $this->conn->task_queue->drop();
+        $this->conn = null;
     }
 
     protected function createQueue()
     {
-        $this->collection->remove(array(), array('safe' => true));
+        $this->conn->task_queue->remove(array(), array('safe' => true));
 
-        return new MongoDBQueue($this->collection);
+        return new MongoDBQueue($this->conn->task_queue);
     }
 
     protected static function createConnection()
