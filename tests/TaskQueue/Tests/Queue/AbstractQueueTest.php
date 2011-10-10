@@ -2,59 +2,49 @@
 
 namespace TaskQueue\Tests\Queue;
 
-use TaskQueue\Task\Task;
-
 abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
 {
-    public function testPop()
+    public function testPushPop()
     {
+        $t1 = $this->createTaskMock();
+        $t1->expects($this->atLeastOnce())
+            ->method('getEta')
+            ->will($this->returnValue(new \DateTime('+1 seconds')));
+
+        $t2 = $this->createTaskMock();
+        $t2->expects($this->atLeastOnce())
+            ->method('getEta')
+            ->will($this->returnValue(new \DateTime()));
+
+        $t3 = $this->createTaskMock();
+        $t3->expects($this->atLeastOnce())
+            ->method('getEta')
+            ->will($this->returnValue(new \DateTime('+1 hour')));
+
         $queue = $this->createQueue();
-
-        $t1 = $this->getMock('TaskQueue\\Task\\TaskInterface');
         $queue->push($t1);
-
-        $t2 = $this->getMock('TaskQueue\\Task\\TaskInterface');
         $queue->push($t2);
-
-        $this->assertEquals($t1, $queue->pop());
-        $this->assertEquals($t2, $queue->pop());
-        $this->assertFalse($queue->pop());
-    }
-
-    public function testPopOrder()
-    {
-        $queue = $this->createQueue();
-
-        $t1 = new Task(null, '+2 seconds');
-        $queue->push($t1);
-
-        $t2 = new Task(null);
-        $queue->push($t2);
-
-        $t3 = new Task(null, '+1 hour');
         $queue->push($t3);
 
         $this->assertEquals($t2, $queue->pop());
-        sleep(2);
+        $this->assertFalse($queue->pop());
+        sleep(1);
         $this->assertEquals($t1, $queue->pop());
         $this->assertFalse($queue->pop());
     }
 
     public function testPeek()
     {
+        $t1 = $this->createTaskMock();
+        $t2 = $this->createTaskMock();
+        $t3 = $this->createTaskMock();
+
         $queue = $this->createQueue();
-
-        $t1 = $this->getMock('TaskQueue\\Task\\TaskInterface');
         $queue->push($t1);
-
-        $t2 = $this->getMock('TaskQueue\\Task\\TaskInterface');
         $queue->push($t2);
-
-        $t3 = $this->getMock('TaskQueue\\Task\\TaskInterface');
         $queue->push($t3);
 
         $tasks = $queue->peek(2, 1);
-
         $this->assertInstanceOf('Iterator', $tasks);
 
         $tasks->rewind();
@@ -96,13 +86,21 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
         $queue = $this->createQueue();
         $this->assertEquals(0, $queue->count());
 
+        $task = $this->createTaskMock();
         for ($i = 0; $i < 7; $i++) {
-            $queue->push($this->getMock('TaskQueue\\Task\\TaskInterface'));
+            $queue->push($task);
         }
         $this->assertEquals(7, $queue->count());
 
         $queue->clear();
         $this->assertEquals(0, $queue->count());
+    }
+
+    protected function createTaskMock()
+    {
+        return $this->getMockBuilder('TaskQueue\Task\TaskInterface')
+            ->setMockClassName('Mock_TaskInterface_'.uniqid())
+            ->getMock();
     }
 
     abstract protected function createQueue();
