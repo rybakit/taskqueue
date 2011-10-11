@@ -15,9 +15,10 @@ class TaskTest extends \PHPUnit_Framework_TestCase
             $this->assertInstanceOf('\PHPUnit_Framework_Error_Warning', $e, '__construct() throws a warning and notice if the payload is not specified');
         }
 
-        $payload = 'payload';
+        $payload = uniqid();
         $task = new Task($payload);
         $this->assertSame($payload, $task->getPayload());
+        $this->assertEmpty($task->getEta());
 
         $eta = new \DateTime();
         $task = new Task(null, $eta);
@@ -31,7 +32,7 @@ class TaskTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($eta, $task->getEta());
     }
 
-    public function testRescheduling()
+    public function testReschedule()
     {
         $eta = new \DateTime();
 
@@ -51,5 +52,27 @@ class TaskTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($task->reschedule());
         $this->assertEquals(2, $task->getRetryCount());
         $this->assertEquals($eta->getTimestamp() + 5, $task->getEta()->getTimestamp());
+    }
+
+    public function testClone()
+    {
+        $eta = new \DateTime();
+        $task = new Task(null, $eta);
+
+        $cloned = clone $task;
+        $this->assertInstanceOf('DateTime', $cloned->getEta());
+        $this->assertEquals($eta, $cloned->getEta());
+
+        $task = new Task(null);
+        $cloned = clone $task;
+        $this->assertNull($cloned->getEta());
+
+        $task = new Task(null);
+        $task->setMaxRetryCount(2);
+        $task->reschedule();
+
+        $cloned = clone $task;
+        $this->assertEquals(1, $task->getRetryCount());
+        $this->assertEquals(0, $cloned->getRetryCount());
     }
 }

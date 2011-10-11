@@ -178,7 +178,10 @@ class Task implements TaskInterface
      */
     public function __clone()
     {
-        $this->eta = clone $this->eta;
+        if ($this->eta) {
+            $this->eta = clone $this->eta;
+        }
+
         $this->retryCount = 0;
     }
 }
