@@ -3,10 +3,13 @@
 namespace TaskQueue\Tests\Queue\Database\Pdo;
 
 use TaskQueue\Tests\Queue\AbstractQueueTest;
-use TaskQueue\Queue\Database\Pdo\PostgresPdoQueue;
+use TaskQueue\Queue\Database\Pdo\PgSqlPdoQueue;
 
-class PostgresPdoQueueTest extends AbstractQueueTest
+class PgSqlPdoQueueTest extends AbstractQueueTest
 {
+    /**
+     * @var \PDO
+     */
     protected static $conn;
 
     public static function setUpBeforeClass()
@@ -35,7 +38,7 @@ class PostgresPdoQueueTest extends AbstractQueueTest
 
     protected function createQueue()
     {
-        return new PostgresPdoQueue(self::$conn, 'task_queue');
+        return new PgSqlPdoQueue(self::$conn, 'task_queue');
     }
 
     protected static function createConnection()

@@ -2,7 +2,7 @@
 
 namespace TaskQueue\Queue\Database\Pdo;
 
-class PostgresPdoQueue extends PdoQueue
+class PgSqlPdoQueue extends PdoQueue
 {
     public function __construct(\PDO $db, $tableName)
     {

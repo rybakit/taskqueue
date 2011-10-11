@@ -103,5 +103,8 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
             ->getMock();
     }
 
+    /**
+     * @return \TaskQueue\Queue\QueueInterface
+     */
     abstract protected function createQueue();
 }
