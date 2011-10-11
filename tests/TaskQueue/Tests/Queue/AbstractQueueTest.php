@@ -9,7 +9,7 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
         $t1 = $this->createTaskMock();
         $t1->expects($this->atLeastOnce())
             ->method('getEta')
-            ->will($this->returnValue(new \DateTime('+1 seconds')));
+            ->will($this->returnValue(new \DateTime('+1 second')));
 
         $t2 = $this->createTaskMock();
         $t2->expects($this->atLeastOnce())
