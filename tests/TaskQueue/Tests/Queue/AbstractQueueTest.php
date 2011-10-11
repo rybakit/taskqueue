@@ -9,7 +9,7 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
         $t1 = $this->createTaskMock();
         $t1->expects($this->atLeastOnce())
             ->method('getEta')
-            ->will($this->returnValue(new \DateTime('+1 second')));
+            ->will($this->returnValue(new \DateTime('+2 seconds')));
 
         $t2 = $this->createTaskMock();
         $t2->expects($this->atLeastOnce())
@@ -28,7 +28,7 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($t2, $queue->pop());
         $this->assertFalse($queue->pop());
-        sleep(1);
+        sleep(2);
         $this->assertEquals($t1, $queue->pop());
         $this->assertFalse($queue->pop());
     }
@@ -98,9 +98,18 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
 
     protected function createTaskMock()
     {
-        return $this->getMockBuilder('TaskQueue\Task\TaskInterface')
+        $mock = $this->getMockBuilder('TaskQueue\Task\TaskInterface')
             ->setMockClassName('Mock_TaskInterface_'.uniqid())
             ->getMock();
+
+        // need at least one method for proper
+        // serialization/deserialization of mocked object, e.g.:
+        // $this->assertEquals($mock, unserialize(serialize($mock)));
+        $mock->expects($this->any())
+            ->method('fakeMethod')
+            ->will($this->returnValue(true));
+
+        return $mock;
     }
 
     /**

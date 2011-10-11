@@ -62,6 +62,8 @@ class TaskTest extends \PHPUnit_Framework_TestCase
         $cloned = clone $task;
         $this->assertInstanceOf('DateTime', $cloned->getEta());
         $this->assertEquals($eta, $cloned->getEta());
+        $task->getEta()->modify('+5 seconds');
+        $this->assertNotEquals($task->getEta(), $cloned->getEta());
 
         $task = new Task(null);
         $cloned = clone $task;
