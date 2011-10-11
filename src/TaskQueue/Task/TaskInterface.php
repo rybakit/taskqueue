@@ -7,6 +7,8 @@ use TaskQueue\Queue\QueueInterface;
 interface TaskInterface
 {
     /**
+     * TODO: remove it?
+     *
      * @return mixed
      */
     function getPayload();

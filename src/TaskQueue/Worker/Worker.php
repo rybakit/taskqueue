@@ -137,17 +137,12 @@ abstract class Worker
     }
 
     /**
-     * @throws \UnexpectedValueException
-     *
      * @return array|bool
      */
     protected function getNext()
     {
         foreach ($this->queues as $queue) {
             while ($task = $queue->pop()) {
-                if (!$task instanceof TaskInterface) {
-                    throw new \UnexpectedValueException(sprintf('Result of %s::pop() must be an instance of TaskInterface.', get_class($queue)));
-                }
                 return array($queue, $task);
             }
         }

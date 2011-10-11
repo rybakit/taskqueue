@@ -133,8 +133,6 @@ class Task implements TaskInterface
     }
 
     /**
-     * TODO think over returned result - store it within task or bypass?
-     *
      * @see TaskInterface::run()
      */
     public function run($callback, QueueInterface $queue)
