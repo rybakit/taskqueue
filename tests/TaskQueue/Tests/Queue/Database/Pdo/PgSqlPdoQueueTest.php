@@ -23,7 +23,7 @@ class PgSqlPdoQueueTest extends AbstractQueueTest
 
     public static function tearDownAfterClass()
     {
-        parent::tearDown();
+        parent::tearDownAfterClass();
 
         self::$conn->exec('DROP TABLE IF EXISTS task_queue');
         self::$conn = null;
