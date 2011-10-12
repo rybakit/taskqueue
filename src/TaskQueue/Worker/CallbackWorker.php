@@ -45,6 +45,6 @@ class CallbackWorker extends Worker
      */
     protected function runTask(TaskInterface $task, QueueInterface $queue)
     {
-        $task->run($this->callback, $queue);
+        return $task->run($this->callback, $queue);
     }
 }

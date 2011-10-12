@@ -4,6 +4,7 @@ namespace TaskQueue\Worker;
 
 use TaskQueue\Queue\QueueInterface;
 use TaskQueue\Task\TaskInterface;
+use TaskQueue\Exception\TaskFailedException;
 use TaskQueue\Log\LoggerInterface;
 use TaskQueue\Log\NullLogger;
 
@@ -96,6 +97,9 @@ abstract class Worker
                 $this->isCurrentTaskProcessed = true;
 
                 $this->logger->info(sprintf('Task %s was successfully executed.', $task));
+            } catch (TaskFailedException $e) {
+                $this->logger->err(sprintf('Task %s failed: %s', $task, $e->getMessage()));
+
             } catch (\Exception $e) {
                 $this->logger->err(sprintf('An error occurred while executing task %s: %s.', $task, $e->getMessage()));
                 if ($task->reschedule()) {
