@@ -101,7 +101,7 @@ abstract class Worker
                 $this->logger->err(sprintf('Task %s failed: %s', $task, $e->getMessage()));
 
             } catch (\Exception $e) {
-                $this->logger->err(sprintf('An error occurred while executing task %s: %s.', $task, $e->getMessage()));
+                $this->logger->err(sprintf('An error occurred while executing task %s: %s', $task, $e->getMessage()));
                 if ($task->reschedule()) {
                     $queue->push($task);
                     $this->isCurrentTaskProcessed = true;
