@@ -48,6 +48,8 @@ abstract class Worker
         }
 
         $this->logger = $logger ?: new NullLogger();
+
+        register_shutdown_function(array($this, 'shutdown'));
     }
 
     /**
@@ -74,8 +76,6 @@ abstract class Worker
 
     public function work()
     {
-        register_shutdown_function(array($this, 'shutdown'));
-
         $next = false;
 
         try {
