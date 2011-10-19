@@ -44,7 +44,10 @@ class MongoDBQueue implements QueueInterface
             'task'  => $this->normalizeData($task),
         );
 
-        $this->collection->insert($data, array('safe' => true));
+        $result = $this->collection->insert($data, array('safe' => true));
+        if (!$result['ok']) {
+            throw new \RuntimeException($result['errmsg']);
+        }
     }
 
     /**
@@ -61,8 +64,8 @@ class MongoDBQueue implements QueueInterface
         );
 
         $result = $this->collection->db->command($command);
-        if (!isset($result['ok']) || !$result['ok']) {
-            throw new \RuntimeException(isset($result['errmsg']) ? $result['errmsg'] : 'Unable to query collection.');
+        if (!$result['ok']) {
+            throw new \RuntimeException($result['errmsg']);
         }
 
         $data = $result['value'];

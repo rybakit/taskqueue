@@ -6,6 +6,17 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
 {
     public function testPushPop()
     {
+        $task = $this->createTaskMock();
+        $queue = $this->createQueue();
+
+        $this->assertFalse($queue->pop());
+        $queue->push($task);
+        $this->assertEquals($task, $queue->pop());
+        $this->assertFalse($queue->pop());
+    }
+
+    public function testPushPopOrder()
+    {
         $t1 = $this->createTaskMock();
         $t1->expects($this->atLeastOnce())
             ->method('getEta')
@@ -16,21 +27,14 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
             ->method('getEta')
             ->will($this->returnValue(new \DateTime()));
 
-        $t3 = $this->createTaskMock();
-        $t3->expects($this->atLeastOnce())
-            ->method('getEta')
-            ->will($this->returnValue(new \DateTime('+1 hour')));
-
         $queue = $this->createQueue();
         $queue->push($t1);
         $queue->push($t2);
-        $queue->push($t3);
 
         $this->assertEquals($t2, $queue->pop());
         $this->assertFalse($queue->pop());
         sleep(2);
         $this->assertEquals($t1, $queue->pop());
-        $this->assertFalse($queue->pop());
     }
 
     public function testPeek()

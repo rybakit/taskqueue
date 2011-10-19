@@ -15,6 +15,7 @@ class PgSqlPdoQueue extends PdoQueue
 
     /**
      * @see QueueInterface::pop()
+     * @see http://stackoverflow.com/questions/6507475/job-queue-as-sql-table-with-multiple-consumers-postgresql
      */
     public function pop()
     {
@@ -22,11 +23,19 @@ class PgSqlPdoQueue extends PdoQueue
         $sql = 'DELETE FROM '.$this->tableName.' WHERE id = ('.$sql.') RETURNING task';
 
         $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
+        $stmt->bindValue(':now', date(static::DATETIME_FORMAT));
 
-        if (!$stmt->execute()) {
-            $err = $stmt->errorInfo();
-            throw new \RuntimeException($err[2]);
+        $this->db->beginTransaction();
+        $this->db->exec('LOCK TABLE '.$this->tableName.' IN ACCESS EXCLUSIVE MODE');
+        try {
+            if (!$stmt->execute()) {
+                $err = $stmt->errorInfo();
+                throw new \RuntimeException($err[2]);
+            }
+            $this->db->commit();
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
         }
 
         $result = $stmt->fetchColumn();
