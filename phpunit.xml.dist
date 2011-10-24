@@ -20,6 +20,10 @@
 
         <var name="mongo_server" value="mongodb://localhost:27017" />
         <var name="mongo_db_name" value="task_queue_tests" />
+
+        <var name="redis_host" value="127.0.0.1" />
+        <var name="redis_port" value="6379" />
+        <var name="redis_prefix" value="task_queue_tests" />
     </php -->
 
     <testsuites>
