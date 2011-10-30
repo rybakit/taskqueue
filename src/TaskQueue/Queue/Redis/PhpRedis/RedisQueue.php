@@ -29,8 +29,6 @@ class RedisQueue implements QueueInterface
     {
         $this->redis = $redis;
         $this->prefix = $prefix;
-
-        $this->initLock();
     }
 
     /**
@@ -71,28 +69,114 @@ class RedisQueue implements QueueInterface
     /**
      * @see QueueInterface::pop()
      */
+    /*
     public function pop()
     {
-        if ($this->tryLock()) {
+        while (true) {
+            $expires = time() + static::LOCK_TIMEOUT;
+            $acquired = $this->redis->setNx($this->prefix.':lock', $expires);
+            if (!$acquired) {
+                $timeout = $this->redis->get($this->prefix.':lock');
+                if ($timeout >= time()) {
+                    //echo "get()\n";
+                    usleep(100);
+                    continue;
+                }
+
+                $timeout = $this->redis->getSet($this->prefix.':lock', $expires);
+                if ($timeout >= time()) {
+                    //echo "getSet()\n";
+                    usleep(100);
+                    continue;
+                }
+            }
+
             $range = $this->redis->zRangeByScore($this->prefix.':tasks', '-inf', time(),
                 array('limit' => array(0, 1)));
 
             if (empty($range)) {
-                $this->unlock();
+                // release lock
+                if ($this->redis->get($this->prefix.':lock') == $expires) {
+                    $this->redis->del($this->prefix.':lock');
+                }
                 return false;
             }
 
             $key = reset($range);
-            $this->redis->zRem($this->prefix.':tasks', $key);
-            $this->unlock();
+            //echo $key, "\n";
+            if ($this->redis->zRem($this->prefix.':tasks', $key)) {
+                // release lock
+                if ($this->redis->get($this->prefix.':lock') == $expires) {
+                    $this->redis->del($this->prefix.':lock');
+                }
+            } else {
+                throw new \RuntimeException(sprintf('Key %s is not found.', $key));
+            }
 
             $data = substr($key, strpos($key, '@'));
 
             return $this->normalizeData($data, true);
         }
-
-        return false;
     }
+    */
+
+    public function pop()
+    {
+        while (true) {
+            if ($this->tryLock()) {
+                $range = $this->redis->zRangeByScore($this->prefix.':tasks', '-inf', time(),
+                    array('limit' => array(0, 1)));
+
+                if (empty($range)) {
+                    $this->releaseLock();
+                    return false;
+                }
+
+                $key = reset($range);
+                $this->redis->zRem($this->prefix.':tasks', $key);
+                $this->releaseLock();
+
+                $data = substr($key, strpos($key, '@'));
+
+                return $this->normalizeData($data, true);
+            }
+
+            // the lock failed to be released by the client
+             $this->releaseLock();
+        }
+    }
+
+    /*
+    public function pop()
+    {
+        $max = time();
+        $i = 0;
+
+        while (true) {
+            $range = $this->redis->zRangeByScore($this->prefix.':tasks', '-inf', $max,
+                array('limit' => array(0, 15)));
+
+            if (empty($range)) {
+                return false;
+            }
+
+            foreach ($range as $key) {
+                if ($this->redis->zRem($this->prefix.':tasks', $key)) {
+                    break 2;
+                }
+                $i++;
+                //echo "$i call zRem()\n";
+            }
+            //echo "call zRangeByScore()\n";
+        };
+
+        //echo "Success! (total iterations: $i)\n\n";
+
+        $data = substr($key, strpos($key, '@'));
+
+        return $this->normalizeData($data, true);
+    }
+    */
 
     /**
      * @see QueueInterface::peek()
@@ -108,7 +192,7 @@ class RedisQueue implements QueueInterface
         }
 
         $range = $this->redis->zRangeByScore($this->prefix.':tasks', '-inf', time(),
-            array('withscores' => true, 'limit' => array($skip, $limit)));
+            array('limit' => array($skip, $limit)));
 
         if (empty($range)) {
             return false;
@@ -145,22 +229,19 @@ class RedisQueue implements QueueInterface
         return $invert ? unserialize(base64_decode($data)) : base64_encode(serialize($data));
     }
 
-    protected function initLock()
-    {
-        if (!$this->redis->getSet($this->prefix.':lock_init', 1)) {
-            $this->redis->lPush($this->prefix.':lock', 1);
-        }
-    }
-
     protected function tryLock()
     {
+        $this->redis->watch($this->prefix.':lock');
         $result = $this->redis->blPop(array($this->prefix.':lock'), static::LOCK_TIMEOUT);
 
         return !empty($result);
     }
 
-    protected function unlock()
+    protected function releaseLock()
     {
-        $this->redis->lPush($this->prefix.':lock', 1);
+        $this->redis->multi()
+            ->del($this->prefix.':lock')
+            ->lPush($this->prefix.':lock', 1)
+            ->exec();
     }
 }
