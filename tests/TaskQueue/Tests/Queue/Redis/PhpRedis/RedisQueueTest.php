@@ -24,7 +24,7 @@ class RedisQueueTest extends AbstractQueueTest
     {
         parent::tearDownAfterClass();
 
-        self::$conn->delete('task_queue_tests');
+        self::$conn->del(self::$conn->getOption(\Redis::OPT_PREFIX));
         self::$conn->close();
         self::$conn = null;
     }
@@ -33,15 +33,17 @@ class RedisQueueTest extends AbstractQueueTest
     {
         parent::setUp();
 
-        self::$conn->delete('task_queue_tests');
+        self::$conn->del(self::$conn->getOption(\Redis::OPT_PREFIX));
     }
 
     public static function createConnection()
     {
         $host = isset($GLOBALS['redis_host']) ? $GLOBALS['redis_host'] : '127.0.0.1';
         $port = isset($GLOBALS['redis_port']) ? $GLOBALS['redis_port'] : 6379;
+        $prefix = isset($GLOBALS['redis_prefix']) ? $GLOBALS['redis_prefix'] : 'task_queue_tests:';
 
         $redis = new \Redis();
+        $redis->setOption(\Redis::OPT_PREFIX, $prefix);
         $redis->connect($host, $port);
 
         return $redis;
@@ -49,9 +51,7 @@ class RedisQueueTest extends AbstractQueueTest
 
     protected function createQueue()
     {
-        $prefix = isset($GLOBALS['redis_prefix']) ? $GLOBALS['redis_prefix'] : 'task_queue_tests';
-
-        return new RedisQueue(self::$conn, $prefix);
+        return new RedisQueue(self::$conn);
     }
 
     public function testPeek() {}

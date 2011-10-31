@@ -23,7 +23,7 @@
 
         <var name="redis_host" value="127.0.0.1" />
         <var name="redis_port" value="6379" />
-        <var name="redis_prefix" value="task_queue_tests" />
+        <var name="redis_prefix" value="task_queue_tests:" />
     </php -->
 
     <testsuites>
