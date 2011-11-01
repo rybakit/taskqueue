@@ -17,14 +17,13 @@ class RedisQueueTest extends AbstractQueueTest
         parent::setUpBeforeClass();
 
         self::$conn = self::createConnection();
-        //self::$conn->task_queue->drop();
     }
 
     public static function tearDownAfterClass()
     {
         parent::tearDownAfterClass();
 
-        self::$conn->del(self::$conn->getOption(\Redis::OPT_PREFIX));
+        self::clear(self::$conn);
         self::$conn->close();
         self::$conn = null;
     }
@@ -33,7 +32,7 @@ class RedisQueueTest extends AbstractQueueTest
     {
         parent::setUp();
 
-        self::$conn->del(self::$conn->getOption(\Redis::OPT_PREFIX));
+        self::clear(self::$conn);
     }
 
     public static function createConnection()
@@ -43,8 +42,8 @@ class RedisQueueTest extends AbstractQueueTest
         $prefix = isset($GLOBALS['redis_prefix']) ? $GLOBALS['redis_prefix'] : 'task_queue_tests:';
 
         $redis = new \Redis();
-        $redis->setOption(\Redis::OPT_PREFIX, $prefix);
         $redis->connect($host, $port);
+        $redis->setOption(\Redis::OPT_PREFIX, $prefix);
 
         return $redis;
     }
@@ -54,5 +53,14 @@ class RedisQueueTest extends AbstractQueueTest
         return new RedisQueue(self::$conn);
     }
 
-    public function testPeek() {}
+    protected static function clear(\Redis $redis)
+    {
+        $prefix = $redis->getOption(\Redis::OPT_PREFIX);
+        $offset = strlen($prefix);
+
+        $keys = $redis->keys('*');
+        foreach ($keys as $key) {
+            $redis->del(substr($key, $offset));
+        }
+    }
 }

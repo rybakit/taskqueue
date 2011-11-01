@@ -68,7 +68,7 @@ class RedisQueue implements QueueInterface
                 $this->redis->zRem('tasks', $key);
                 $this->releaseLock();
 
-                $data = substr($key, strpos($key, '@'));
+                $data = substr($key, strpos($key, '@') + 1);
 
                 return $this->normalizeData($data, true);
             }
@@ -95,6 +95,12 @@ class RedisQueue implements QueueInterface
         if (empty($range)) {
             return false;
         }
+
+        $self = $this;
+        return new IterableResult($range, function ($data) use ($self) {
+            $data = substr($data, strpos($data, '@') + 1);
+            return $self->normalizeData($data, true);
+        });
     }
 
     /**
