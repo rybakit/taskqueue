@@ -1,0 +1,26 @@
+{
+    "name": "rybakit/taskqueue",
+    "description": "A lightweight task queue",
+    "keywords": ["queue task job worker scheduler cron"],
+    "homepage": "https://github.com/rybakit/taskqueue",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eugene Leonovich",
+            "email": "gen.work@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "suggest": {
+        "ext-mongodb": "*",
+        "ext-phpredis": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "TaskQueue": "src/"
+        }
+    }
+}
