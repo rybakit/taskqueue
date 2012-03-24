@@ -133,14 +133,6 @@ class Task implements TaskInterface
     }
 
     /**
-     * @see TaskInterface::run()
-     */
-    public function run($callback, QueueInterface $queue)
-    {
-        return call_user_func($callback, $this, $queue);
-    }
-
-    /**
      * @see TaskInterface::reschedule()
      */
     public function reschedule()
