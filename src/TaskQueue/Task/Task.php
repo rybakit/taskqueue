@@ -83,7 +83,7 @@ class Task implements TaskInterface
     }
 
     /**
-     * Returns the earliest time when task will execute.
+     * @see TaskInterface::getEta()
      *
      * @return \DateTime|null
      */

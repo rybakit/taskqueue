@@ -12,6 +12,8 @@ interface TaskInterface
     function getPayload();
 
     /**
+     * Returns the earliest time when task will execute.
+     *
      * @return \DateTime|null
      */
     function getEta();
