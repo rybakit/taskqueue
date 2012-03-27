@@ -2,10 +2,10 @@
 
 namespace TaskQueue\Queue\Database\Pdo;
 
-use TaskQueue\Queue\QueueInterface;
+use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
 
-class PdoQueue implements QueueInterface
+class PdoQueue implements AdvancedQueueInterface
 {
     const DATETIME_FORMAT = 'Y-m-d H:i:s';
 
@@ -80,7 +80,7 @@ class PdoQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::peek()
+     * @see AdvancedQueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
@@ -117,7 +117,7 @@ class PdoQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::count()
+     * @see AdvancedQueueInterface::count()
      */
     public function count()
     {
@@ -133,7 +133,7 @@ class PdoQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::clear()
+     * @see AdvancedQueueInterface::clear()
      */
     public function clear()
     {

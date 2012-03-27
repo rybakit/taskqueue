@@ -2,10 +2,9 @@
 
 namespace TaskQueue\Queue;
 
-use TaskQueue\Queue\QueueInterface;
 use TaskQueue\Task\TaskInterface;
 
-class PhpQueue implements QueueInterface
+class PhpQueue implements AdvancedQueueInterface
 {
     /**
      * @var \SplPriorityQueue
@@ -50,7 +49,7 @@ class PhpQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::peek()
+     * @see AdvancedQueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
@@ -66,7 +65,7 @@ class PhpQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::count()
+     * @see AdvancedQueueInterface::count()
      */
     public function count()
     {
@@ -74,7 +73,7 @@ class PhpQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::clear()
+     * @see AdvancedQueueInterface::clear()
      */
     public function clear()
     {

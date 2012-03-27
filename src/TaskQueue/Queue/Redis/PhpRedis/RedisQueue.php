@@ -2,10 +2,10 @@
 
 namespace TaskQueue\Queue\Redis\PhpRedis;
 
-use TaskQueue\Queue\QueueInterface;
+use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
 
-class RedisQueue implements QueueInterface
+class RedisQueue implements AdvancedQueueInterface
 {
     const LOCK_TIMEOUT = 10;
 
@@ -79,7 +79,7 @@ class RedisQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::peek()
+     * @see AdvancedQueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
@@ -104,7 +104,7 @@ class RedisQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::count()
+     * @see AdvancedQueueInterface::count()
      */
     public function count()
     {
@@ -112,7 +112,7 @@ class RedisQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::clear()
+     * @see AdvancedQueueInterface::clear()
      */
     public function clear()
     {

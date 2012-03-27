@@ -2,10 +2,10 @@
 
 namespace TaskQueue\Queue\MongoDB\Standard;
 
-use TaskQueue\Queue\QueueInterface;
+use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
 
-class MongoDBQueue implements QueueInterface
+class MongoDBQueue implements AdvancedQueueInterface
 {
     /**
      * @var \MongoCollection
@@ -74,7 +74,7 @@ class MongoDBQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::peek()
+     * @see AdvancedQueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
@@ -104,7 +104,7 @@ class MongoDBQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::count()
+     * @see AdvancedQueueInterface::count()
      */
     public function count()
     {
@@ -112,7 +112,7 @@ class MongoDBQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::clear()
+     * @see AdvancedQueueInterface::clear()
      */
     public function clear()
     {
