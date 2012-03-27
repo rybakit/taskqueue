@@ -4,7 +4,7 @@ namespace TaskQueue\Queue;
 
 use TaskQueue\Task\TaskInterface;
 
-interface QueueInterface extends \Countable
+interface QueueInterface
 {
     /**
      * @param \TaskQueue\Task\TaskInterface $task
