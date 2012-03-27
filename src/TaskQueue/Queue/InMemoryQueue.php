@@ -4,7 +4,7 @@ namespace TaskQueue\Queue;
 
 use TaskQueue\Task\TaskInterface;
 
-class PhpQueue implements AdvancedQueueInterface
+class InMemoryQueue implements AdvancedQueueInterface
 {
     /**
      * @var \SplPriorityQueue
