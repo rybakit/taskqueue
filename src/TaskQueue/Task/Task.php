@@ -2,8 +2,6 @@
 
 namespace TaskQueue\Task;
 
-use TaskQueue\Queue\QueueInterface;
-
 class Task implements TaskInterface
 {
     /**
