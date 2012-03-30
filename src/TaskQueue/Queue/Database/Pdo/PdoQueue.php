@@ -12,7 +12,7 @@ class PdoQueue implements AdvancedQueueInterface
     /**
      * @var \PDO
      */
-    protected $db;
+    protected $conn;
 
     /**
      * @var string
@@ -22,18 +22,18 @@ class PdoQueue implements AdvancedQueueInterface
     /**
      * Constructor.
      *
-     * @param \PDO $db
+     * @param \PDO $conn
      * @param string $tableName
      */
-    public function __construct(\PDO $db, $tableName)
+    public function __construct(\PDO $conn, $tableName)
     {
-        $this->db = $db;
+        $this->conn = $conn;
         $this->tableName = (string) $tableName;
     }
 
-    public function getDb()
+    public function getConnection()
     {
-        return $this->db;
+        return $this->conn;
     }
 
     public function getTableName()
@@ -48,7 +48,7 @@ class PdoQueue implements AdvancedQueueInterface
     {
         $sql = 'INSERT INTO '.$this->tableName.' (eta, task) VALUES (:eta, :task)';
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
         $eta = $task->getEta() ?: new \DateTime();
         $stmt->bindValue(':eta', $eta->format(self::DATETIME_FORMAT), \PDO::PARAM_STR);
         $stmt->bindValue(':task', $this->normalizeData($task), \PDO::PARAM_STR);
@@ -66,7 +66,7 @@ class PdoQueue implements AdvancedQueueInterface
     {
         $sql = 'SELECT task FROM '.$this->tableName.' WHERE eta <= :now ORDER BY eta, id LIMIT 1';
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
         $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
 
         if (!$stmt->execute()) {
@@ -101,7 +101,7 @@ class PdoQueue implements AdvancedQueueInterface
             $sql .= ' OFFSET '.(int) $skip;
         }
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
         $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
 
         if (!$stmt->execute()) {
@@ -122,7 +122,7 @@ class PdoQueue implements AdvancedQueueInterface
     public function count()
     {
         $sql = 'SELECT COUNT(*) FROM '.$this->tableName;
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -138,7 +138,7 @@ class PdoQueue implements AdvancedQueueInterface
     public function clear()
     {
         $sql = 'TRUNCATE TABLE '.$this->tableName;
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -155,5 +155,27 @@ class PdoQueue implements AdvancedQueueInterface
     public function normalizeData($data, $invert = false)
     {
         return $invert ? unserialize(base64_decode($data)) : base64_encode(serialize($data));
+    }
+
+    /**
+     * @param string $sql
+     *
+     * @return \PDOStatement
+     *
+     * @throws \RuntimeException
+     */
+    protected function prepareStatement($sql)
+    {
+        try {
+            $stmt = $this->conn->prepare($sql);
+        } catch (\Exception $e) {
+            $stmt = false;
+        }
+
+        if (false === $stmt) {
+            throw new \RuntimeException('The database cannot successfully prepare the statement.');
+        }
+
+        return $stmt;
     }
 }
