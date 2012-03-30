@@ -50,8 +50,8 @@ class PdoQueue implements AdvancedQueueInterface
 
         $stmt = $this->prepareStatement($sql);
         $eta = $task->getEta() ?: new \DateTime();
-        $stmt->bindValue(':eta', $eta->format(self::DATETIME_FORMAT), \PDO::PARAM_STR);
-        $stmt->bindValue(':task', $this->normalizeData($task), \PDO::PARAM_STR);
+        $stmt->bindValue(':eta', $eta->format(self::DATETIME_FORMAT));
+        $stmt->bindValue(':task', $this->normalizeData($task));
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
