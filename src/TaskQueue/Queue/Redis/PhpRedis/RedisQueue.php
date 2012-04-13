@@ -4,6 +4,7 @@ namespace TaskQueue\Queue\Redis\PhpRedis;
 
 use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
+use TaskQueue\SimpleSerializer;
 
 class RedisQueue implements AdvancedQueueInterface
 {
@@ -15,6 +16,11 @@ class RedisQueue implements AdvancedQueueInterface
     protected $redis;
 
     /**
+     * @var \TaskQueue\SimpleSerializer
+     */
+    protected $serializer;
+
+    /**
      * Constructor.
      *
      * @param \Redis $redis
@@ -22,6 +28,7 @@ class RedisQueue implements AdvancedQueueInterface
     public function __construct(\Redis $redis)
     {
         $this->redis = $redis;
+        $this->serializer = new SimpleSerializer();
     }
 
     /**
@@ -43,7 +50,7 @@ class RedisQueue implements AdvancedQueueInterface
 
         $score = $eta->getTimestamp();
         $unique = $this->redis->incr('sequence');
-        $member = $unique.'@'.$this->normalizeData($task);
+        $member = $unique.'@'.$this->serializer->serialize($task);
 
         $result = $this->redis->zAdd('tasks', $score, $member);
         if (!$result) {
@@ -70,7 +77,7 @@ class RedisQueue implements AdvancedQueueInterface
 
                 $data = substr($key, strpos($key, '@') + 1);
 
-                return $this->normalizeData($data, true);
+                return $this->serializer->unserialize($data);
             }
 
             // the lock failed to be released by the client
@@ -96,10 +103,10 @@ class RedisQueue implements AdvancedQueueInterface
             return false;
         }
 
-        $self = $this;
-        return new IterableResult($range, function ($data) use ($self) {
+        $serializer = $this->serializer;
+        return new IterableResult($range, function ($data) use ($serializer) {
             $data = substr($data, strpos($data, '@') + 1);
-            return $self->normalizeData($data, true);
+            return $serializer->unserialize($data);
         });
     }
 
@@ -117,17 +124,6 @@ class RedisQueue implements AdvancedQueueInterface
     public function clear()
     {
         $this->redis->del(array('tasks', 'sequence'));
-    }
-
-    /**
-     * @param mixed $data
-     * @param bool $invert
-     *
-     * @return array
-     */
-    public function normalizeData($data, $invert = false)
-    {
-        return $invert ? unserialize(base64_decode($data)) : base64_encode(serialize($data));
     }
 
     protected function tryLock()

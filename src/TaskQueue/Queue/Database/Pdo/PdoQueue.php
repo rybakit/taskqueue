@@ -4,6 +4,7 @@ namespace TaskQueue\Queue\Database\Pdo;
 
 use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
+use TaskQueue\SimpleSerializer;
 
 class PdoQueue implements AdvancedQueueInterface
 {
@@ -20,6 +21,11 @@ class PdoQueue implements AdvancedQueueInterface
     protected $tableName;
 
     /**
+     * @var \TaskQueue\SimpleSerializer
+     */
+    protected $serializer;
+
+    /**
      * Constructor.
      *
      * @param \PDO $conn
@@ -29,6 +35,7 @@ class PdoQueue implements AdvancedQueueInterface
     {
         $this->conn = $conn;
         $this->tableName = (string) $tableName;
+        $this->serializer = new SimpleSerializer();
     }
 
     public function getConnection()
@@ -50,8 +57,8 @@ class PdoQueue implements AdvancedQueueInterface
 
         $stmt = $this->prepareStatement($sql);
         $eta = $task->getEta() ?: new \DateTime();
-        $stmt->bindValue(':eta', $eta->format(self::DATETIME_FORMAT));
-        $stmt->bindValue(':task', $this->normalizeData($task));
+        $stmt->bindValue(':eta', $eta->format(static::DATETIME_FORMAT));
+        $stmt->bindValue(':task', $this->serializer->serialize($task));
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -67,7 +74,7 @@ class PdoQueue implements AdvancedQueueInterface
         $sql = 'SELECT task FROM '.$this->tableName.' WHERE eta <= :now ORDER BY eta, id LIMIT 1';
 
         $stmt = $this->prepareStatement($sql);
-        $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
+        $stmt->bindValue(':now', date(static::DATETIME_FORMAT));
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -76,7 +83,7 @@ class PdoQueue implements AdvancedQueueInterface
 
         $data = $stmt->fetchColumn();
 
-        return $data ? $this->normalizeData($data, true) : false;
+        return $data ? $this->serializer->unserialize($data) : false;
     }
 
     /**
@@ -102,17 +109,17 @@ class PdoQueue implements AdvancedQueueInterface
         }
 
         $stmt = $this->prepareStatement($sql);
-        $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
+        $stmt->bindValue(':now', date(static::DATETIME_FORMAT));
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
             throw new \RuntimeException($err[2]);
         }
 
-        $self = $this;
-        return new IterableResult(function() use ($stmt, $self) {
+        $serializer = $this->serializer;
+        return new IterableResult(function() use ($stmt, $serializer) {
             $data = $stmt->fetchColumn();
-            return $data ? $self->normalizeData($data, true) : false;
+            return $data ? $serializer->unserialize($data) : false;
         });
     }
 
@@ -144,17 +151,6 @@ class PdoQueue implements AdvancedQueueInterface
             $err = $stmt->errorInfo();
             throw new \RuntimeException($err[2]);
         }
-    }
-
-    /**
-     * @param mixed $data
-     * @param bool $invert
-     *
-     * @return array
-     */
-    public function normalizeData($data, $invert = false)
-    {
-        return $invert ? unserialize(base64_decode($data)) : base64_encode(serialize($data));
     }
 
     /**

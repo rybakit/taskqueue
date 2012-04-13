@@ -38,8 +38,8 @@ class PgSqlPdoQueue extends PdoQueue
             throw $e;
         }
 
-        $result = $stmt->fetchColumn();
+        $data = $stmt->fetchColumn();
 
-        return $result ? $this->normalizeData($result, true) : false;
+        return $data ? $this->serializer->unserialize($data) : false;
     }
 }
