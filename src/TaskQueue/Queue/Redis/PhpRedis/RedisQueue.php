@@ -2,10 +2,11 @@
 
 namespace TaskQueue\Queue\Redis\PhpRedis;
 
-use TaskQueue\Queue\QueueInterface;
+use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
+use TaskQueue\SimpleSerializer;
 
-class RedisQueue implements QueueInterface
+class RedisQueue implements AdvancedQueueInterface
 {
     const LOCK_TIMEOUT = 10;
 
@@ -15,6 +16,11 @@ class RedisQueue implements QueueInterface
     protected $redis;
 
     /**
+     * @var \TaskQueue\SimpleSerializer
+     */
+    protected $serializer;
+
+    /**
      * Constructor.
      *
      * @param \Redis $redis
@@ -22,6 +28,7 @@ class RedisQueue implements QueueInterface
     public function __construct(\Redis $redis)
     {
         $this->redis = $redis;
+        $this->serializer = new SimpleSerializer();
     }
 
     /**
@@ -43,7 +50,7 @@ class RedisQueue implements QueueInterface
 
         $score = $eta->getTimestamp();
         $unique = $this->redis->incr('sequence');
-        $member = $unique.'@'.$this->normalizeData($task);
+        $member = $unique.'@'.$this->serializer->serialize($task);
 
         $result = $this->redis->zAdd('tasks', $score, $member);
         if (!$result) {
@@ -70,7 +77,7 @@ class RedisQueue implements QueueInterface
 
                 $data = substr($key, strpos($key, '@') + 1);
 
-                return $this->normalizeData($data, true);
+                return $this->serializer->unserialize($data);
             }
 
             // the lock failed to be released by the client
@@ -79,7 +86,7 @@ class RedisQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::peek()
+     * @see AdvancedQueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
@@ -96,15 +103,15 @@ class RedisQueue implements QueueInterface
             return false;
         }
 
-        $self = $this;
-        return new IterableResult($range, function ($data) use ($self) {
+        $serializer = $this->serializer;
+        return new IterableResult($range, function ($data) use ($serializer) {
             $data = substr($data, strpos($data, '@') + 1);
-            return $self->normalizeData($data, true);
+            return $serializer->unserialize($data);
         });
     }
 
     /**
-     * @see QueueInterface::count()
+     * @see AdvancedQueueInterface::count()
      */
     public function count()
     {
@@ -112,22 +119,11 @@ class RedisQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::clear()
+     * @see AdvancedQueueInterface::clear()
      */
     public function clear()
     {
         $this->redis->del(array('tasks', 'sequence'));
-    }
-
-    /**
-     * @param mixed $data
-     * @param bool $invert
-     *
-     * @return array
-     */
-    public function normalizeData($data, $invert = false)
-    {
-        return $invert ? unserialize(base64_decode($data)) : base64_encode(serialize($data));
     }
 
     protected function tryLock()

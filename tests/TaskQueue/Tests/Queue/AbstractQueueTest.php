@@ -117,7 +117,7 @@ abstract class AbstractQueueTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \TaskQueue\Queue\QueueInterface
+     * @return \TaskQueue\Queue\AdvancedQueueInterface
      */
     abstract protected function createQueue();
 }

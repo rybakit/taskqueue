@@ -4,13 +4,13 @@ namespace TaskQueue\Queue\Database\Pdo;
 
 class PgSqlPdoQueue extends PdoQueue
 {
-    public function __construct(\PDO $db, $tableName)
+    public function __construct(\PDO $conn, $tableName)
     {
-        if ('pgsql' != $db->getAttribute(\PDO::ATTR_DRIVER_NAME)) {
+        if ('pgsql' != $conn->getAttribute(\PDO::ATTR_DRIVER_NAME)) {
             throw new \InvalidArgumentException('Invalid PDO driver specified.');
         }
 
-        parent::__construct($db, $tableName);
+        parent::__construct($conn, $tableName);
     }
 
     /**
@@ -22,24 +22,24 @@ class PgSqlPdoQueue extends PdoQueue
         $sql = 'SELECT id FROM '.$this->tableName.' WHERE eta <= :now ORDER BY eta, id LIMIT 1';
         $sql = 'DELETE FROM '.$this->tableName.' WHERE id = ('.$sql.') RETURNING task';
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
         $stmt->bindValue(':now', date(static::DATETIME_FORMAT));
 
-        $this->db->beginTransaction();
-        $this->db->exec('LOCK TABLE '.$this->tableName.' IN ACCESS EXCLUSIVE MODE');
+        $this->conn->beginTransaction();
+        $this->conn->exec('LOCK TABLE '.$this->tableName.' IN ACCESS EXCLUSIVE MODE');
         try {
             if (!$stmt->execute()) {
                 $err = $stmt->errorInfo();
                 throw new \RuntimeException($err[2]);
             }
-            $this->db->commit();
+            $this->conn->commit();
         } catch (\Exception $e) {
-            $this->db->rollBack();
+            $this->conn->rollBack();
             throw $e;
         }
 
-        $result = $stmt->fetchColumn();
+        $data = $stmt->fetchColumn();
 
-        return $result ? $this->normalizeData($result, true) : false;
+        return $data ? $this->serializer->unserialize($data) : false;
     }
 }

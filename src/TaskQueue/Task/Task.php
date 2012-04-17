@@ -2,8 +2,6 @@
 
 namespace TaskQueue\Task;
 
-use TaskQueue\Queue\QueueInterface;
-
 class Task implements TaskInterface
 {
     /**
@@ -83,7 +81,7 @@ class Task implements TaskInterface
     }
 
     /**
-     * Returns the earliest time when task will execute.
+     * @see TaskInterface::getEta()
      *
      * @return \DateTime|null
      */
@@ -130,14 +128,6 @@ class Task implements TaskInterface
     public function getRetryCount()
     {
         return $this->retryCount;
-    }
-
-    /**
-     * @see TaskInterface::run()
-     */
-    public function run($callback, QueueInterface $queue)
-    {
-        return call_user_func($callback, $this, $queue);
     }
 
     /**

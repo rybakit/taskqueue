@@ -2,17 +2,18 @@
 
 namespace TaskQueue\Queue\Database\Pdo;
 
-use TaskQueue\Queue\QueueInterface;
+use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
+use TaskQueue\SimpleSerializer;
 
-class PdoQueue implements QueueInterface
+class PdoQueue implements AdvancedQueueInterface
 {
     const DATETIME_FORMAT = 'Y-m-d H:i:s';
 
     /**
      * @var \PDO
      */
-    protected $db;
+    protected $conn;
 
     /**
      * @var string
@@ -20,20 +21,26 @@ class PdoQueue implements QueueInterface
     protected $tableName;
 
     /**
+     * @var \TaskQueue\SimpleSerializer
+     */
+    protected $serializer;
+
+    /**
      * Constructor.
      *
-     * @param \PDO $db
+     * @param \PDO $conn
      * @param string $tableName
      */
-    public function __construct(\PDO $db, $tableName)
+    public function __construct(\PDO $conn, $tableName)
     {
-        $this->db = $db;
+        $this->conn = $conn;
         $this->tableName = (string) $tableName;
+        $this->serializer = new SimpleSerializer();
     }
 
-    public function getDb()
+    public function getConnection()
     {
-        return $this->db;
+        return $this->conn;
     }
 
     public function getTableName()
@@ -48,10 +55,10 @@ class PdoQueue implements QueueInterface
     {
         $sql = 'INSERT INTO '.$this->tableName.' (eta, task) VALUES (:eta, :task)';
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
         $eta = $task->getEta() ?: new \DateTime();
-        $stmt->bindValue(':eta', $eta->format(self::DATETIME_FORMAT), \PDO::PARAM_STR);
-        $stmt->bindValue(':task', $this->normalizeData($task), \PDO::PARAM_STR);
+        $stmt->bindValue(':eta', $eta->format(static::DATETIME_FORMAT));
+        $stmt->bindValue(':task', $this->serializer->serialize($task));
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -66,8 +73,8 @@ class PdoQueue implements QueueInterface
     {
         $sql = 'SELECT task FROM '.$this->tableName.' WHERE eta <= :now ORDER BY eta, id LIMIT 1';
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
+        $stmt = $this->prepareStatement($sql);
+        $stmt->bindValue(':now', date(static::DATETIME_FORMAT));
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -76,11 +83,11 @@ class PdoQueue implements QueueInterface
 
         $data = $stmt->fetchColumn();
 
-        return $data ? $this->normalizeData($data, true) : false;
+        return $data ? $this->serializer->unserialize($data) : false;
     }
 
     /**
-     * @see QueueInterface::peek()
+     * @see AdvancedQueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
@@ -101,28 +108,28 @@ class PdoQueue implements QueueInterface
             $sql .= ' OFFSET '.(int) $skip;
         }
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':now', date(self::DATETIME_FORMAT));
+        $stmt = $this->prepareStatement($sql);
+        $stmt->bindValue(':now', date(static::DATETIME_FORMAT));
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
             throw new \RuntimeException($err[2]);
         }
 
-        $self = $this;
-        return new IterableResult(function() use ($stmt, $self) {
+        $serializer = $this->serializer;
+        return new IterableResult(function() use ($stmt, $serializer) {
             $data = $stmt->fetchColumn();
-            return $data ? $self->normalizeData($data, true) : false;
+            return $data ? $serializer->unserialize($data) : false;
         });
     }
 
     /**
-     * @see QueueInterface::count()
+     * @see AdvancedQueueInterface::count()
      */
     public function count()
     {
         $sql = 'SELECT COUNT(*) FROM '.$this->tableName;
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -133,12 +140,12 @@ class PdoQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::clear()
+     * @see AdvancedQueueInterface::clear()
      */
     public function clear()
     {
         $sql = 'TRUNCATE TABLE '.$this->tableName;
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepareStatement($sql);
 
         if (!$stmt->execute()) {
             $err = $stmt->errorInfo();
@@ -147,13 +154,24 @@ class PdoQueue implements QueueInterface
     }
 
     /**
-     * @param mixed $data
-     * @param bool $invert
+     * @param string $sql
      *
-     * @return array
+     * @return \PDOStatement
+     *
+     * @throws \RuntimeException
      */
-    public function normalizeData($data, $invert = false)
+    protected function prepareStatement($sql)
     {
-        return $invert ? unserialize(base64_decode($data)) : base64_encode(serialize($data));
+        try {
+            $stmt = $this->conn->prepare($sql);
+        } catch (\Exception $e) {
+            $stmt = false;
+        }
+
+        if (false === $stmt) {
+            throw new \RuntimeException('The database cannot successfully prepare the statement.');
+        }
+
+        return $stmt;
     }
 }

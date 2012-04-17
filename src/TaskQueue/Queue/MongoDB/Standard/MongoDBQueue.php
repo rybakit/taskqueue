@@ -2,15 +2,21 @@
 
 namespace TaskQueue\Queue\MongoDB\Standard;
 
-use TaskQueue\Queue\QueueInterface;
+use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
+use TaskQueue\SimpleSerializer;
 
-class MongoDBQueue implements QueueInterface
+class MongoDBQueue implements AdvancedQueueInterface
 {
     /**
      * @var \MongoCollection
      */
     protected $collection;
+
+    /**
+     * @var \TaskQueue\SimpleSerializer
+     */
+    protected $serializer;
 
     /**
      * Constructor.
@@ -20,6 +26,7 @@ class MongoDBQueue implements QueueInterface
     public function __construct(\MongoCollection $collection)
     {
         $this->collection = $collection;
+        $this->serializer = new SimpleSerializer();
     }
 
     /**
@@ -41,7 +48,7 @@ class MongoDBQueue implements QueueInterface
 
         $data = array(
             'eta'   => new \MongoDate($eta->getTimestamp()),
-            'task'  => $this->normalizeData($task),
+            'task'  => $this->serializer->serialize($task),
         );
 
         $result = $this->collection->insert($data, array('safe' => true));
@@ -57,7 +64,7 @@ class MongoDBQueue implements QueueInterface
     {
         $command = array(
             'findandmodify' => $this->collection->getName(),
-            'remove'        => true,
+            'remove'        => 1,
             'fields'        => array('task' => 1),
             'query'         => array('eta' => array('$lte' => new \MongoDate())),
             'sort'          => array('eta' => 1),
@@ -70,11 +77,11 @@ class MongoDBQueue implements QueueInterface
 
         $data = $result['value'];
 
-        return $data ? $this->normalizeData($data['task'], true) : false;
+        return $data ? $this->serializer->unserialize($data['task']) : false;
     }
 
     /**
-     * @see QueueInterface::peek()
+     * @see AdvancedQueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
@@ -97,14 +104,14 @@ class MongoDBQueue implements QueueInterface
             $cursor->skip($skip);
         }
 
-        $self = $this;
-        return new IterableResult($cursor, function ($data) use ($self) {
-            return $self->normalizeData($data['task'], true);
+        $serializer = $this->serializer;
+        return new IterableResult($cursor, function ($data) use ($serializer) {
+            return $serializer->unserialize($data['task']);
         });
     }
 
     /**
-     * @see QueueInterface::count()
+     * @see AdvancedQueueInterface::count()
      */
     public function count()
     {
@@ -112,21 +119,10 @@ class MongoDBQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::clear()
+     * @see AdvancedQueueInterface::clear()
      */
     public function clear()
     {
         $this->collection->remove(array(), array('safe' => true));
-    }
-
-    /**
-     * @param mixed $data
-     * @param bool $invert
-     *
-     * @return array
-     */
-    public function normalizeData($data, $invert = false)
-    {
-        return $invert ? unserialize(base64_decode($data)) : base64_encode(serialize($data));
     }
 }

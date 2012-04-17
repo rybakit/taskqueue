@@ -2,10 +2,10 @@
 
 namespace TaskQueue\Log;
 
-use TaskQueue\Queue\QueueInterface;
+use TaskQueue\Queue\AdvancedQueueInterface;
 use TaskQueue\Task\TaskInterface;
 
-class LoggableQueue implements QueueInterface
+class LoggableQueue implements AdvancedQueueInterface
 {
     /**
      * @var \TaskQueue\Queue\QueueInterface
@@ -20,10 +20,10 @@ class LoggableQueue implements QueueInterface
     /**
      * Constructor.
      *
-     * @param \TaskQueue\Queue\QueueInterface $queue
+     * @param \TaskQueue\Queue\AdvancedQueueInterface $queue
      * @param \TaskQueue\Log\LoggerInterface $logger
      */
-    public function __construct(QueueInterface $queue, LoggerInterface $logger)
+    public function __construct(AdvancedQueueInterface $queue, LoggerInterface $logger)
     {
         $this->queue = $queue;
         $this->logger = $logger;
@@ -76,7 +76,7 @@ class LoggableQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::peek()
+     * @see AdvancedQueueInterface::peek()
      */
     public function peek($limit = 1, $skip = 0)
     {
@@ -91,7 +91,7 @@ class LoggableQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::count()
+     * @see AdvancedQueueInterface::count()
      */
     public function count()
     {
@@ -99,7 +99,7 @@ class LoggableQueue implements QueueInterface
     }
 
     /**
-     * @see QueueInterface::clear()
+     * @see AdvancedQueueInterface::clear()
      */
     public function clear()
     {
