@@ -74,6 +74,11 @@ abstract class Worker
         unset($this->queues[$oid]);
     }
 
+    /**
+     * @return bool
+     *
+     * @throws \Exception
+     */
     public function work()
     {
         $next = false;
@@ -112,7 +117,11 @@ abstract class Worker
 
             $this->currentTask = null;
             $this->currentQueue = null;
+
+            return true;
         }
+
+        return false;
     }
 
     public function shutdown()
