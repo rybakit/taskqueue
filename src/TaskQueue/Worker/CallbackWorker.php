@@ -37,7 +37,7 @@ class CallbackWorker extends Worker
             throw new \LogicException('No callback specified.');
         }
 
-        parent::work();
+        return parent::work();
     }
 
     /**
