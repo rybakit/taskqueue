@@ -14,6 +14,10 @@ class RedisQueueTest extends AbstractQueueTest
 
     public static function setUpBeforeClass()
     {
+        if (!class_exists('\Redis')) {
+            return;
+        }
+
         parent::setUpBeforeClass();
 
         self::$conn = self::createConnection();
@@ -28,8 +32,12 @@ class RedisQueueTest extends AbstractQueueTest
         self::$conn = null;
     }
 
-    public function setUp()
+    protected function setUp()
     {
+        if (!self::$conn) {
+            $this->markTestSkipped('RedisQueue requires the php "redis" extension.');
+        }
+
         parent::setUp();
 
         self::clear(self::$conn);

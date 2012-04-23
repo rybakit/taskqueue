@@ -14,6 +14,10 @@ class MongoDBQueueTest extends AbstractQueueTest
 
     public static function setUpBeforeClass()
     {
+        if (!class_exists('\Mongo')) {
+            return;
+        }
+
         parent::setUpBeforeClass();
 
         self::$conn = self::createConnection();
@@ -29,8 +33,12 @@ class MongoDBQueueTest extends AbstractQueueTest
         self::$conn = null;
     }
 
-    public function setUp()
+    protected function setUp()
     {
+        if (!self::$conn) {
+            $this->markTestSkipped('MongoDBQueue requires the php "mongo" extension.');
+        }
+
         parent::setUp();
 
         self::$conn->task_queue->remove(array(), array('safe' => true));

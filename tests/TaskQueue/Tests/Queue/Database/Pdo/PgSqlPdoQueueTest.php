@@ -14,6 +14,10 @@ class PgSqlPdoQueueTest extends AbstractQueueTest
 
     public static function setUpBeforeClass()
     {
+        if (!class_exists('\Pdo')) {
+            return;
+        }
+
         parent::setUpBeforeClass();
 
         self::$conn = self::createConnection();
@@ -29,8 +33,12 @@ class PgSqlPdoQueueTest extends AbstractQueueTest
         self::$conn = null;
     }
 
-    public function setUp()
+    protected function setUp()
     {
+        if (!self::$conn) {
+            $this->markTestSkipped('PgSqlPdoQueue requires the php "pdo" extension.');
+        }
+
         parent::setUp();
 
         self::$conn->exec('TRUNCATE task_queue RESTART IDENTITY');
