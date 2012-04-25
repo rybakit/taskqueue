@@ -21,14 +21,14 @@ class Task implements TaskInterface
      *
      * @var int
      */
-    protected $maxRetryCount = 1;
+    protected $maxRetryCount = 2;
 
     /**
      * The time interval, in seconds, between task retries.
      *
      * @var int
      */
-    protected $retryDelay = 5;
+    protected $retryDelay = 60;
 
     /**
      * The number of times this task has been retried.
@@ -53,8 +53,14 @@ class Task implements TaskInterface
     }
 
     /**
-     * Returns task payload.
-     *
+     * @param mixed $payload
+     */
+    public function setPayload($payload)
+    {
+        $this->payload = $payload;
+    }
+
+    /**
      * @return mixed
      */
     public function getPayload()
