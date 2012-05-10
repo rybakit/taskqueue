@@ -116,6 +116,7 @@ class PdoQueue implements AdvancedQueueInterface
             throw new \RuntimeException($err[2]);
         }
 
+        // $iterator = new \NoRewindIterator(new \IteratorIterator($stmt));
         $serializer = $this->serializer;
         return new IterableResult(function() use ($stmt, $serializer) {
             $data = $stmt->fetchColumn();
